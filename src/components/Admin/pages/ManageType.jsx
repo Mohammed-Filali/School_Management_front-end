@@ -1,63 +1,74 @@
-
-
-import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
-
-// import AdminParentList from "../data-table/AdminParentList.jsx";
-import { Tabs ,TabsContent, TabsList, TabsTrigger} from "@radix-ui/react-tabs";
-import { Separator } from "@radix-ui/react-dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 import AdminTypeList from "../data-table/types/AdminTypeList";
 import TypeUpsertForm from "../forms/TypeUpsertForm";
 import { ClasseApi } from "../../../service/api/student/admins/ClasseApi";
+import { Card } from "@/components/ui/card";
 
 export default function ManageType() {
+  const handleCreateType = async (values) => {
+    try {
+      const response = await ClasseApi.createType(values);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
 
+  return (
+    <div className="w-full">
+      <Card className="p-4 md:p-6">
+        <Tabs defaultValue="types_list" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
+            <TabsTrigger value="types_list">Types List</TabsTrigger>
+            <TabsTrigger value="add_type">Add New Type</TabsTrigger>
+          </TabsList>
 
-    return (
-      <>
-        <div className="relative overflow-x-auto w-full">
-          <div className="hidden md:block">
-            <div className="bg-background">
-              <div className="grid">
-                <div className="col-span-3 lg:col-span-4">
-                  <div className="h-full px-4 py-6 lg:px-8">
-                    {/* Change w-[500px] to w-full to make it take the full width */}
-                    <Tabs defaultValue="parents_list" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="parents_list">Type</TabsTrigger>
-                        <TabsTrigger value="add_parent">Add new Type</TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value="parents_list" className="border-none p-0 outline-none">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-1 w-full">
-                            <h2 className="text-2xl font-semibold tracking-tight w-full">
-                              All Types
-                            </h2>
-                            <AdminTypeList />
-                          </div>
-                        </div>
-                        <Separator className="my-4" />
-                        <div className="relative">
-                          <ScrollArea>
-                            <div className="flex space-x-4 pb-4"></div>
-                            <ScrollBar orientation="horizontal" />
-                          </ScrollArea>
-                        </div>
-                      </TabsContent>
-
-                      <TabsContent value="add_parent">
-                        <div className="space-y-1">
-                          <TypeUpsertForm handleSubmit={(values) => ClasseApi.createType(values)}  />
-                        </div>
-                        <Separator className="my-4" />
-                      </TabsContent>
-                    </Tabs>
-                  </div>
-                </div>
-              </div>
+          <TabsContent 
+            value="types_list" 
+            className="mt-6 space-y-4"
+          >
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold tracking-tight">
+                All Types
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Manage all available types in the system
+              </p>
             </div>
-          </div>
-        </div>
-      </>
-    );
-  }
+            
+            <Separator className="my-4" />
+            
+            <div className="rounded-md border">
+              <AdminTypeList />
+            </div>
+          </TabsContent>
+
+          <TabsContent 
+            value="add_type" 
+            className="mt-6 space-y-4"
+          >
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold tracking-tight">
+                Add New Type
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Fill out the form to create a new type
+              </p>
+            </div>
+            
+            <Separator className="my-4" />
+            
+            <TypeUpsertForm 
+              handleSubmit={handleCreateType}
+              onSuccess={() => {
+                // You might want to add success handling here
+                // For example, switch back to the list tab
+              }}
+            />
+          </TabsContent>
+        </Tabs>
+      </Card>
+    </div>
+  );
+}

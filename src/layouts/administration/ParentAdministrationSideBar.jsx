@@ -1,45 +1,75 @@
-import {cn} from "@/lib/utils"
-import { Link } from "react-router-dom"
-import { Button } from "../../components/ui/button"
-import { PARENT_MANAGE_RECORDS_ROUTE } from "../../router"
-// import {Button} from "../../components/ui/button.jsx";
-// import {Link} from "react-router-dom";
-// import {ADMIN_MANAGE_PARENTS_ROUTE} from "../../router/index.jsx";
+import { cn } from "@/lib/utils";
+import { Link, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { 
+  PARENT_CalendarList_ROUTE, 
+  PARENT_MANAGE_RECORDS_ROUTE, 
+  PARENT_MANAGE_STUDENT_MOYENNES_ROUTE
+} from "../../router";
+import { 
+  ClipboardList, 
+  CalendarDays,
+  ChevronRight,
+  UserCog,
+  BookUser,
+  School
+} from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-export function ParentAdministrationSideBar({className}) {
+export function ParentAdministrationSideBar({ className }) {
+  const { pathname } = useLocation();
+
+  const navItems = [
+    {
+      icon: <BookUser className="h-4 w-4" />,
+      label: "Your Child's Records",
+      path: PARENT_MANAGE_RECORDS_ROUTE,
+    },
+    {
+      icon: <BookUser className="h-4 w-4" />,
+      label: "Your Child's courses avg",
+      path: PARENT_MANAGE_STUDENT_MOYENNES_ROUTE,
+    },
+    {
+      icon: <CalendarDays className="h-4 w-4" />,
+      label: "Your Child's Attendance",
+      path: PARENT_CalendarList_ROUTE,
+    },
+    // Add more items as needed
+  ];
 
   return (
-    <div className={cn("pb-12", className)}>
-      <div>
-        <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-            Administration
-          </h2>
-          <div className="space-y-1">
-
-                <Link to={PARENT_MANAGE_RECORDS_ROUTE}>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="mr-2 h-4 w-4"
-                    >
-                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
-                    </svg>
-                    Your Child's Records
+    <div className={cn("hidden lg:block border-r h-full", className)}>
+      <ScrollArea className="h-full">
+        <div className="space-y-4 py-4">
+          <div className="px-4">
+            <h2 className="text-lg font-semibold tracking-tight pl-3">
+              Parent Dashboard
+            </h2>
+          </div>
+          
+          <div className="px-3 py-2">
+            <div className="space-y-1">
+              {navItems.map((item) => (
+                <Link to={item.path} key={item.path}>
+                  <Button
+                    variant={pathname === item.path ? "secondary" : "ghost"}
+                    className="w-full justify-between group"
+                  >
+                    <div className="flex items-center">
+                      <span className="mr-3 text-muted-foreground group-hover:text-primary">
+                        {item.icon}
+                      </span>
+                      {item.label}
+                    </div>
+                    <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </Button>
                 </Link>
-                
-
+              ))}
             </div>
+          </div>
         </div>
-      </div>
+      </ScrollArea>
     </div>
-  )
+  );
 }

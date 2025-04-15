@@ -1,215 +1,377 @@
 import {
-    MdAdminPanelSettings,
-    MdKeyboardArrowDown,
-    MdKeyboardArrowUp,
-    MdKeyboardDoubleArrowUp,
-  } from "react-icons/md";
-  import { ClipboardEdit, Loader2} from "lucide-react";
-  import { FaNewspaper,  } from "react-icons/fa";
-  import { FaArrowsToDot } from "react-icons/fa6";
-  import moment from "moment";
-  import clsx from "clsx";
-  import {  PRIOTITYSTYELS, TASK_TYPE } from "../../utils/index";
-  import { Chart } from "../Chart";
+  MdAdminPanelSettings,
+  MdKeyboardArrowDown,
+  MdKeyboardArrowUp,
+  MdKeyboardDoubleArrowUp,
+  MdClass,
+  MdAssignment,
+  MdPerson,
+  MdBarChart,
+  MdToday
+} from "react-icons/md";
+import { ClipboardEdit, Loader2, BookOpen, CalendarCheck } from "lucide-react";
+import { FaNewspaper, FaChalkboardTeacher } from "react-icons/fa";
+import { FaArrowsToDot } from "react-icons/fa6";
+import moment from "moment";
+import clsx from "clsx";
+import { PRIOTITYSTYELS, TASK_TYPE } from "../../utils/index";
+import { Chart } from "../Chart";
+import { useDispatch, useSelector } from "react-redux";
+import { setTasks, setGraphData, setLast10Task } from '../../redux/TasksSlice';
+import { useEffect, useState } from "react";
+import { TasksApi } from "../../service/api/student/tasksApi";
+import { UseUserContext } from "../../context/StudentContext";
 
-  import { useDispatch, useSelector } from "react-redux";
-  import { setTasks, setGraphData, setLast10Task } from '../../redux/TasksSlice';
-  import { useEffect, useState } from "react";
-  import { TasksApi } from "../../service/api/student/tasksApi";
-  import { UseUserContext } from "../../context/StudentContext";
+const TaskTable = ({ tasks }) => {
+  const ICONS = {
+    high: <MdKeyboardDoubleArrowUp />,
+    medium: <MdKeyboardArrowUp />,
+    low: <MdKeyboardArrowDown />,
+  };
 
-  const TaskTable = ({ tasks }) => {
-      const ICONS = {
-        high: <MdKeyboardDoubleArrowUp />,
-        medium: <MdKeyboardArrowUp />,
-        low: <MdKeyboardArrowDown />,
-      };
+  const TableHeader = () => (
+    <thead className='border-b border-gray-200'>
+      <tr className='text-black text-left'>
+        <th className='py-3 px-2'>Task Title</th>
+        <th className='py-3 px-2'>Priority</th>
+        <th className='py-3 px-2 hidden md:table-cell'>Status</th>
+        <th className='py-3 px-2 hidden md:table-cell'>Created At</th>
+      </tr>
+    </thead>
+  );
 
-      const TableHeader = () => (
-        <thead className='border-b border-gray-300'>
-          <tr className='text-black text-left'>
-            <th className='py-2'>Task Title</th>
-            <th className='py-2'>Priority</th>
-            <th className='py-2 hidden md:block'>Created At</th>
-          </tr>
-        </thead>
-      );
-
-      const TableRow = ({ task }) => (
-        <tr className='border-b border-gray-300 text-gray-600 hover:bg-gray-300/10'>
-          <td className='py-2'>
-            <div className='flex items-center gap-2'>
-              <div className={clsx("w-4 h-4 rounded-full", TASK_TYPE[task.status])} />
-              <p className='text-base text-black'>{task.title}</p>
-            </div>
-          </td>
-
-          <td className='py-2'>
-            <div className='flex gap-1 items-center'>
-              <span className={clsx("text-lg", PRIOTITYSTYELS[task.priority])}>
-                {ICONS[task.priority]}
-              </span>
-              <span className='capitalize'>{task.priority}</span>
-            </div>
-          </td>
-
-
-
-          <td className='py-2 hidden md:block'>
-            <span className='text-base text-gray-600'>
-              {moment(task.created_at).fromNow()}
-            </span>
-          </td>
-        </tr>
-      );
-
-      return (
-        <div className='w-full md:w-2/3 bg-white px-2 md:px-4 pt-4 pb-4 shadow-md rounded'>
-          <table className='w-full'>
-            <TableHeader />
-            <tbody>
-              {tasks?.map((task, id) => (
-                <TableRow key={task.id} task={task} />
-              ))}
-            </tbody>
-          </table>
+  const TableRow = ({ task }) => (
+    <tr className='border-b border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors'>
+      <td className='py-3 px-2'>
+        <div className='flex items-center gap-2'>
+          <div className={clsx("w-3 h-3 rounded-full", TASK_TYPE[task.status])} />
+          <p className='text-base text-black font-medium'>{task.title}</p>
         </div>
-      );
+      </td>
+
+      <td className='py-3 px-2'>
+        <div className='flex gap-1 items-center'>
+          <span className={clsx("text-lg", PRIOTITYSTYELS[task.priority])}>
+            {ICONS[task.priority]}
+          </span>
+          <span className='capitalize'>{task.priority}</span>
+        </div>
+      </td>
+
+      <td className='py-3 px-2 hidden md:table-cell'>
+        <span className={clsx("px-2 py-1 rounded-full text-xs font-medium", 
+          task.status === "completed" ? "bg-green-100 text-green-800" :
+          task.status === "in progress" ? "bg-blue-100 text-blue-800" :
+          "bg-yellow-100 text-yellow-800"
+        )}>
+          {task.status}
+        </span>
+      </td>
+
+      <td className='py-3 px-2 hidden md:table-cell'>
+        <span className='text-sm text-gray-600'>
+          {moment(task.created_at).format("MMM D, YYYY")}
+        </span>
+      </td>
+    </tr>
+  );
+
+  return (
+    <div className='w-full bg-white rounded-lg border border-gray-200 overflow-hidden'>
+      <div className='p-4 border-b border-gray-200'>
+        <h3 className='text-lg font-semibold text-gray-800'>Recent Tasks</h3>
+      </div>
+      <div className="overflow-x-auto">
+        <table className='w-full'>
+          <TableHeader />
+          <tbody>
+            {tasks?.map((task) => (
+              <TableRow key={task.id} task={task} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const ExamSummary = ({ exams }) => {
+  // Calculate average grades per exam
+  const examStats = exams.map(exam => {
+    const total = exam.records.reduce((sum, record) => sum + record.note, 0);
+    const average = exam.records.length > 0 ? (total / exam.records.length).toFixed(2) : 0;
+    return {
+      name: exam.name,
+      average,
+      count: exam.records.length,
+      highest: Math.max(...exam.records.map(r => r.note)),
+      lowest: Math.min(...exam.records.map(r => r.note))
     };
+  });
 
-
-
-
-
-
-
-    const TeacherDashboard = () => {
-      const { user } = UseUserContext(); // Get authenticated user
-      const dispatch = useDispatch();
-      const [loading, setLoading] = useState(false);
-      const [filteredTasks, setFilteredTasks] = useState([]); // Filtered tasks for auth user
-
-      // Fetch all tasks from API
-      useEffect(() => {
-          dispatch(setGraphData([]));
-          dispatch(setLast10Task([]));
-
-        setLoading(true);
-        TasksApi.tasks().then(({ data }) => {
-          setLoading(false);
-          dispatch(setTasks(data)); // Store all tasks in Redux
-        });
-      }, [dispatch]);
-
-      const allTasks = useSelector((state) => state.userTasks.tasks);
-
-      // **Filter tasks for authenticated user**
-      useEffect(() => {
-        if (allTasks?.length > 0) {
-          const userTasks = allTasks.filter(
-            (task) => task.taskable_type === user.role && task.taskable_id === user.id
-          );
-          setFilteredTasks(userTasks);
-        }
-      }, [allTasks, user]);
-
-      // **Update graphData based on filtered tasks**
-
-
-      const graphData = useSelector((state) => state.userTasks.graphData);
-      const last10Task = useSelector((state) => state.userTasks.last10Task);
-
-      // **Statistics Cards**
-      const stats = [
-        {
-          _id: "1",
-          label: "TOTAL TASK",
-          total: filteredTasks?.length || 0,
-          icon: <FaNewspaper />,
-          bg: "bg-[#1d4ed8]",
-        },
-        {
-          _id: "2",
-          label: "COMPLETED TASK",
-          total: filteredTasks?.filter((task) => task.status === "completed")?.length || 0,
-          icon: <MdAdminPanelSettings />,
-          bg: "bg-[#0f766e]",
-        },
-        {
-          _id: "3",
-          label: "TASK IN PROGRESS",
-          total: filteredTasks?.filter((task) => task.status === "in progress")?.length || 0,
-          icon: <ClipboardEdit />,
-          bg: "bg-[#f59e0b]",
-        },
-        {
-          _id: "4",
-          label: "TODOS",
-          total: filteredTasks?.filter((task) => task.status === "todo")?.length || 0,
-          icon: <FaArrowsToDot />,
-          bg: "bg-[#be185d]",
-        },
-      ];
-      useEffect(() => {
-
-          if (filteredTasks?.length > 0) {
-              const newGraphData = [
-                { priority: "normal", count: filteredTasks.filter((task) => task.priority === "normal")?.length },
-                { priority: "medium", count: filteredTasks.filter((task) => task.priority === "medium")?.length },
-                { priority: "high", count: filteredTasks.filter((task) => task.priority === "high")?.length },
-                { priority: "low", count: filteredTasks.filter((task) => task.priority === "low")?.length },
-              ];
-              dispatch(setGraphData(newGraphData));
-
-              const newLast10Tasks = filteredTasks.slice(0, 10); // Get last 10 tasks
-              dispatch(setLast10Task(newLast10Tasks));
-          }
-        }, [filteredTasks, dispatch]);
-
-      // **Card Component**
-      const Card = ({ label, count, bg, icon }) => (
-        <div className="w-full h-32 bg-white p-5 shadow-md rounded-md flex items-center justify-between">
-          <div className="h-full flex flex-1 flex-col justify-between">
-            <p className="text-base text-gray-600">{label}</p>
-            <span className="text-2xl font-semibold">{count}</span>
-            <span className="text-sm text-gray-400">{"110 last month"}</span>
-          </div>
-          <div className={clsx("w-10 h-10 rounded-full flex items-center justify-center text-white", bg)}>
-            {icon}
-          </div>
-        </div>
-      );
-
-      // **Loading State**
-      if (loading) {
-        return (
-          <div className="w-full flex items-center justify-center">
-            <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
-          </div>
-        );
-      }
-
-      return (
-        <div className="h-full py-4">
-          {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-            {stats.map(({ icon, bg, label, total }, index) => (
-              <Card key={index} icon={icon} bg={bg} label={label} count={total} />
+  return (
+    <div className='w-full bg-white rounded-lg border border-gray-200 overflow-hidden'>
+      <div className='p-4 border-b border-gray-200'>
+        <h3 className='text-lg font-semibold text-gray-800'>Exam Performance</h3>
+      </div>
+      <div className="p-4">
+        {examStats.length > 0 ? (
+          <div className="space-y-4">
+            {examStats.map((exam, index) => (
+              <div key={index} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium text-gray-800">{exam.name}</h4>
+                  <span className="text-sm text-gray-500">{exam.count} students</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 mr-4">
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-blue-500" 
+                        style={{ width: `${(exam.average / 20) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-semibold">{exam.average}</span>
+                    <span className="text-xs text-gray-500 ml-1">/20</span>
+                  </div>
+                </div>
+                <div className="flex justify-between mt-2 text-xs text-gray-500">
+                  <span>Lowest: {exam.lowest}</span>
+                  <span>Highest: {exam.highest}</span>
+                </div>
+              </div>
             ))}
           </div>
+        ) : (
+          <p className="text-gray-500 text-center py-4">No exam data available</p>
+        )}
+      </div>
+    </div>
+  );
+};
 
-          {/* Chart */}
-          <div className="w-full bg-white my-16 p-4 rounded shadow-sm">
-            <h4 className="text-xl text-gray-600 font-semibold">Chart by Priority</h4>
-            <Chart data={graphData} />
+const ClassSummary = ({ classes }) => {
+  const totalHours = classes.reduce((sum, cls) => sum + cls.masseH, 0);
+  const totalClasses = classes.reduce((sum, cls) => sum + cls.class_type.classe.length, 0);
+
+  return (
+    <div className='w-full bg-white rounded-lg border border-gray-200 overflow-hidden'>
+      <div className='p-4 border-b border-gray-200'>
+        <h3 className='text-lg font-semibold text-gray-800'>Classes Summary</h3>
+      </div>
+      <div className="p-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-blue-50 p-3 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Classes</p>
+                <h3 className="text-2xl font-bold text-gray-800">{totalClasses}</h3>
+              </div>
+              <div className="p-3 rounded-full bg-blue-100 text-blue-600">
+                <MdClass size={20} />
+              </div>
+            </div>
           </div>
-
-          {/* Last 10 Tasks Table */}
-          <div className="w-full flex flex-col md:flex-row gap-4 2xl:gap-10 py-8">
-            <TaskTable tasks={last10Task} />
+          
+          <div className="bg-green-50 p-3 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Hours</p>
+                <h3 className="text-2xl font-bold text-gray-800">{totalHours}</h3>
+              </div>
+              <div className="p-3 rounded-full bg-green-100 text-green-600">
+                <CalendarCheck size={20} />
+              </div>
+            </div>
           </div>
         </div>
-      );
-    };
+        
+        <div className="mt-4">
+          <h4 className="font-medium text-gray-700 mb-2">Your Classes</h4>
+          <ul className="space-y-2">
+            {classes.map((cls, index) => (
+              <li key={index} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
+                <div>
+                  <p className="font-medium">{cls.class_type.name}</p>
+                  <p className="text-sm text-gray-500">
+                    {cls.class_type.classe.length} groups • {cls.masseH} hours
+                  </p>
+                </div>
+                <span className="text-sm text-gray-500">{cls.class_type.code}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-    export default TeacherDashboard;
+const TeacherDashboard = () => {
+  const { user } = UseUserContext();
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
+  const [filteredTasks, setFilteredTasks] = useState([]);
+  
+  // Fetch all tasks from API
+  useEffect(() => {
+    dispatch(setGraphData([]));
+    dispatch(setLast10Task([]));
+
+    TasksApi.tasks().then(({ data }) => {
+      dispatch(setTasks(data));
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [dispatch]);
+
+  const allTasks = useSelector((state) => state.userTasks.tasks);
+
+  // Filter tasks for authenticated user
+  useEffect(() => {
+    if (allTasks?.length > 0) {
+      const userTasks = allTasks.filter(
+        (task) => task.taskable_type === user.role && task.taskable_id === user.id
+      );
+      setFilteredTasks(userTasks);
+    }
+  }, [allTasks, user]);
+
+  const graphData = useSelector((state) => state.userTasks.graphData);
+  const last10Task = useSelector((state) => state.userTasks.last10Task);
+
+  // Update graph data and last 10 tasks
+  useEffect(() => {
+    if (filteredTasks?.length > 0) {
+      const newGraphData = [
+        { priority: "normal", count: filteredTasks.filter((task) => task.priority === "normal")?.length },
+        { priority: "medium", count: filteredTasks.filter((task) => task.priority === "medium")?.length },
+        { priority: "high", count: filteredTasks.filter((task) => task.priority === "high")?.length },
+        { priority: "low", count: filteredTasks.filter((task) => task.priority === "low")?.length },
+      ];
+      dispatch(setGraphData(newGraphData));
+
+      const newLast10Tasks = filteredTasks.slice(0, 10);
+      dispatch(setLast10Task(newLast10Tasks));
+    }
+  }, [filteredTasks, dispatch]);
+
+  // Calculate statistics
+  const totalClasses = user.classes.reduce((sum, cls) => sum + cls.class_type.classe.length, 0);
+  const totalHours = user.classes.reduce((sum, cls) => sum + cls.masseH, 0)*totalClasses;
+  const totalExams = user.exams.length;
+  const totalStudents = user.classes.reduce((sum, cls) => {
+    const uniqueStudents = new Set(cls.class_type.classe.flatMap(record => record.students.map(student => student.id)));
+    return sum + uniqueStudents.size;
+  }, 0);
+
+  const stats = [
+    {
+      _id: "1",
+      label: "TOTAL CLASSES",
+      total: totalClasses,
+      icon: <MdClass className="text-xl" />,
+      bg: "bg-blue-100",
+      text: "text-blue-600"
+    },
+    {
+      _id: "2",
+      label: "TOTAL HOURS",
+      total: totalHours,
+      icon: <CalendarCheck className="text-xl" />,
+      bg: "bg-green-100",
+      text: "text-green-600"
+    },
+    {
+      _id: "3",
+      label: "TOTAL EXAMS",
+      total: totalExams,
+      icon: <MdAssignment className="text-xl" />,
+      bg: "bg-amber-100",
+      text: "text-amber-600"
+    },
+    {
+      _id: "4",
+      label: "TOTAL STUDENTS",
+      total: totalStudents,
+      icon: <MdPerson className="text-xl" />,
+      bg: "bg-purple-100",
+      text: "text-purple-600"
+    },
+  ];
+
+  const Card = ({ label, count, bg, text, icon }) => (
+    <div className={`p-4 rounded-xl ${bg} flex items-center justify-between shadow-sm`}>
+      <div>
+        <p className="text-sm font-medium text-gray-600">{label}</p>
+        <h3 className="text-2xl font-bold mt-1 text-gray-800">{count}</h3>
+      </div>
+      <div className={`p-3 rounded-lg ${text} bg-white bg-opacity-50`}>
+        {icon}
+      </div>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div className="w-full h-64 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 pb-6">
+      {/* Welcome Header */}
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Welcome, {user.firsName} {user.lastName}</h1>
+            <p className="text-gray-600 mt-1">Here's what's happening with your classes today</p>
+          </div>
+          <div className="mt-4 md:mt-0 flex items-center space-x-2 bg-blue-50 px-4 py-2 rounded-lg">
+            <BookOpen className="text-blue-500" size={18} />
+            <span className="font-medium text-blue-600">{user.course.name}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map(({ icon, bg, text, label, total }, index) => (
+          <Card key={index} icon={icon} bg={bg} text={text} label={label} count={total} />
+        ))}
+      </div>
+
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Task Priority Chart */}
+          <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">Task Priority Distribution</h3>
+              <MdBarChart className="text-gray-500" size={20} />
+            </div>
+            <Chart data={graphData} />
+          </div>
+          
+          {/* Recent Tasks */}
+          <TaskTable tasks={last10Task} />
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-6">
+          {/* Exam Summary */}
+          <ExamSummary exams={user.exams} />
+          
+          {/* Class Summary */}
+          <ClassSummary classes={user.classes} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TeacherDashboard;

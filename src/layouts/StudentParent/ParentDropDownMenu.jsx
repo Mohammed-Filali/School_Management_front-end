@@ -4,6 +4,7 @@ import {
     Github,
     Keyboard,
     LifeBuoy,
+   
     LogOut,
     Mail,
     MessageSquare,
@@ -32,9 +33,9 @@ import {
   } from "@/components/ui/dropdown-menu"
 import { Button } from "../../components/ui/button"
 import { UseUserContext } from "../../context/StudentContext"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { StudentApi } from "../../service/api/student/studentApi"
-import { LOGIN_ROUTE } from "../../router"
+import { LOGIN_ROUTE, PARENT_PROFILE_ROUTE } from "../../router"
 
   export default function ParentrDropDownMenu({children}) {
     const{logout , user} = UseUserContext()
@@ -63,9 +64,11 @@ import { LOGIN_ROUTE } from "../../router"
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <User />
-            <span>Profile</span>
-            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+          <Link to={PARENT_PROFILE_ROUTE}>
+                <User />
+                <span>Profile</span>
+                <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <CreditCard />

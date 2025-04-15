@@ -10,8 +10,6 @@ import { toast } from "sonner";
 import { useEffect, useState } from "react";
 
 import { CourApi } from "../../../service/api/student/admins/CourApi";
-import { TeacherApi } from "../../../service/api/student/teacherApi";
-
 // Zod schema for validation
 const formSchema = z.object({
   coef: z.string(),
@@ -22,10 +20,9 @@ const formSchema = z.object({
 });
 
 export default function ClaseCourForm({ handleSubmit, values, class_id }) {
-  const [cours, setCours] = useState([]);
-  const [teachers, setTeachers] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [selectedCourse, setSelectedCourse] = useState(null);
   // Initialize form
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -45,12 +42,10 @@ export default function ClaseCourForm({ handleSubmit, values, class_id }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [coursesRes, teachersRes] = await Promise.all([
+        const [coursesRes, ] = await Promise.all([
           CourApi.all(["id", "name"]),
-          TeacherApi.all(),
         ]);
-        setCours(coursesRes.data.data);
-        setTeachers(teachersRes.data.data);
+        setCourses(coursesRes.data.data);
       } catch (error) {
         toast.error("Failed to load resources");
       } finally {
@@ -130,66 +125,71 @@ export default function ClaseCourForm({ handleSubmit, values, class_id }) {
             </FormItem>
           )}
         />
+<FormField
+  control={form.control}
+  name="course_id"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Course</FormLabel>
+      <Select
+        onValueChange={(value) => {
+          field.onChange(value);
+          const selected = courses.find((c) => c.id.toString() === value);
+          setSelectedCourse(selected); // Set the selected course
+        }}
+        value={field.value?.toString()}
+        disabled={isLoading}
+      >
+        <FormControl>
+          <SelectTrigger>
+            <SelectValue placeholder="Select Course" />
+          </SelectTrigger>
+        </FormControl>
+        <SelectContent>
+          {courses.map((course) => (
+            <SelectItem key={course.id} value={course.id.toString()}>
+              {course.name || "Unnamed Course"}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
 
-        {/* Course Selection */}
-        <FormField
-          control={form.control}
-          name="course_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Course</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                disabled={isLoading}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Course" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {cours.map((cour) => (
-                    <SelectItem key={cour.id} value={cour.id.toString()}>
-                      {cour.name || "Unnamed Course"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+{/* Teacher Selection */}
+{selectedCourse && (
+  <FormField
+    control={form.control}
+    name="teacher_id"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>Teacher</FormLabel>
+        <Select
+          onValueChange={field.onChange}
+          value={field.value?.toString()}
+          disabled={isLoading}
+        >
+          <FormControl>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Teacher" />
+            </SelectTrigger>
+          </FormControl>
+          <SelectContent>
+            {selectedCourse.teachers?.map((teacher) => (
+              <SelectItem key={teacher.id} value={teacher.id.toString()}>
+                {teacher.firstName} {teacher.lastName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+)}
 
-        {/* Teacher Selection */}
-        <FormField
-          control={form.control}
-          name="teacher_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Teacher</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                disabled={isLoading}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Teacher" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {teachers.map((teacher) => (
-                    <SelectItem key={teacher.id} value={teacher.id.toString()}>
-                      {teacher.firstName} {teacher.lastName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         {/* Submit Button */}
         <Button className="mt-2" type="submit" disabled={isSubmitting || isLoading}>

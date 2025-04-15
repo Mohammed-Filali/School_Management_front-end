@@ -1,4 +1,4 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FaList } from "react-icons/fa";
 import { MdGridView } from "react-icons/md";
 import { useParams } from "react-router-dom";
@@ -27,39 +27,35 @@ const TASK_TYPE = {
 };
 
 const Tasks = () => {
-    const dispatch= useDispatch()
-    useEffect(()=>{
-        TasksApi.tasks().then(({data})=>{
-            dispatch(setTasks(data))
-        })
-    },[])
+  const dispatch = useDispatch();
+  useEffect(() => {
+    TasksApi.tasks().then(({ data }) => {
+      dispatch(setTasks(data));
+    });
+  }, []);
 
-    const {user} =UseUserContext()
-    const params = useParams();
-    const [todo , setTodo]=useState([]);
-    const [progress , setProgress]=useState([]);
-    const [complet , setComplet]=useState([]);
+  const { user } = UseUserContext();
+  const params = useParams();
+  const [todo, setTodo] = useState([]);
+  const [progress, setProgress] = useState([]);
+  const [complet, setComplet] = useState([]);
 
-    const [userTasks , setUserTasks]=useState([]);
-    const [loading, setLoading] = useState(false);
-
+  const [userTasks, setUserTasks] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const tasks = useSelector((state) => state.userTasks.tasks); // Get tasks from Redux
 
   useEffect(() => {
-
     const filteredTasks = tasks.filter(
       (t) => t.taskable_type === user.role && t.taskable_id === user.id
     );
 
     setUserTasks(filteredTasks);
-    console.log(userTasks);
 
     setTodo(filteredTasks.filter((t) => t.status === "todo"));
     setProgress(filteredTasks.filter((t) => t.status === "in progress"));
     setComplet(filteredTasks.filter((t) => t.status === "completed"));
   }, [tasks]);
-
 
   const [selected, setSelected] = useState(0);
   const [open, setOpen] = useState(false);
@@ -67,46 +63,45 @@ const Tasks = () => {
   const status = params?.status || "";
 
   return loading ? (
-    <div className="w-full  flex items-center justify-center">
-    <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
-  </div>
+    <div className="w-full flex items-center justify-center min-h-screen">
+      <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
+    </div>
   ) : (
-    <div className='w-full'>
-      <div className='flex items-center justify-between mb-4'>
+    <div className="w-full px-4 md:px-8 lg:px-16 py-6">
+      <div className="flex flex-wrap items-center justify-between mb-6">
         <Title title={status ? `${status} Tasks` : "Tasks"} />
 
         {!status && (
           <Button
             onClick={() => setOpen(true)}
-            label='Create Task'
-            icon={<IoMdAdd className='text-lg' />}
-            className='flex flex-row-reverse gap-1 items-center bg-gray-950 text-white rounded-md py-2 2xl:py-2.5 dark:bg-slate-50 dark:text-gray-950'
+            label="Create Task"
+            icon={<IoMdAdd className="text-lg" />}
+            className="flex flex-row-reverse gap-2 items-center bg-gray-950 text-white rounded-md py-2 px-4 dark:bg-slate-50 dark:text-gray-950 hover:bg-gray-800 transition"
           />
         )}
       </div>
 
-      <Tabs tabs={TABS}  setSelected={setSelected}>
-      {selected !== 1 ? (<div>
-        {!status && (
-          <div className="w-full flex justify-between gap-4 md:gap-x-12 py-4">
-          <TaskTitle tasks={todo} label="To Do" className={TASK_TYPE.todo} />
-          <TaskTitle
-            tasks={progress}
-            label="In Progress"
-            className={TASK_TYPE["in progress"]}
-          />
-          <TaskTitle
-            tasks={complet}
-            label="Completed"
-            className={TASK_TYPE.completed}
-          />
-        </div>
-
-        )}
-
-    </div>
+      <Tabs tabs={TABS} setSelected={setSelected}>
+        {selected !== 1 ? (
+          <div>
+            {!status && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-6">
+                <TaskTitle tasks={todo} label="To Do" className={TASK_TYPE.todo} />
+                <TaskTitle
+                  tasks={progress}
+                  label="In Progress"
+                  className={TASK_TYPE["in progress"]}
+                />
+                <TaskTitle
+                  tasks={complet}
+                  label="Completed"
+                  className={TASK_TYPE.completed}
+                />
+              </div>
+            )}
+          </div>
         ) : (
-          <div className='w-full'>
+          <div className="w-full">
             <Table tasks={userTasks} />
           </div>
         )}

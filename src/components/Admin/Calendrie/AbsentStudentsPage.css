@@ -1,0 +1,35 @@
+.absent-students-container {
+    padding: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .filter-section {
+    margin-bottom: 16px;
+  }
+  
+  .action-buttons {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  @media print {
+    .filter-section, .action-buttons {
+      display: none;
+    }
+    
+    .ant-table {
+      width: 100% !important;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .absent-students-container {
+      padding: 8px;
+    }
+    
+    .ant-card-head-title {
+      padding: 12px 0;
+    }
+  }

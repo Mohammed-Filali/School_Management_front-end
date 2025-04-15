@@ -11,118 +11,120 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { Textarea } from "@/components/ui/textarea";
 
+// Enhanced form validation schema
 const formSchema = z.object({
-  name: z.string().max(50, "Name must be at most 50 characters."),
-  code: z.string().max(50, "Code must be at most 50 characters."),
-  description: z.string().max(250, "Description must be at most 250 characters."),
-  image: z
-    .instanceof(File)
-    .refine((file) => file.size <= 5 * 1024 * 1024, "File size exceeds the limit of 5MB.")
+  name: z.string()
+    .min(2, "Name must be at least 2 characters")
+    .max(50, "Name must be at most 50 characters"),
+  code: z.string()
+    .min(2, "Code must be at least 2 characters")
+    .max(50, "Code must be at most 50 characters"),
+  description: z.string()
+    .max(250, "Description must be at most 250 characters")
     .optional(),
+  image: z
+    .instanceof(File, { message: "Please upload an image file" })
+    .refine(
+      (file) => file.size <= 5 * 1024 * 1024, 
+      "File size must be less than 5MB"
+    )
+    .refine(
+      (file) => file.type.startsWith("image/"), 
+      "Only image files are allowed"
+    )
+    .optional(),
+  id: z.number().optional()
 });
 
 function TypeUpsertForm({ handleSubmit, values }) {
-    const form = useForm({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-          name: values?.name || "",
-          code: values?.code || "",
-          description: values?.description || "",
-          image: values?.image || "",
-          id:values?.id || null,
-        },
-      });
-
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: values?.name || "",
+      code: values?.code || "",
+      description: values?.description || "",
+      image: undefined,
+      id: values?.id || undefined,
+    },
+  });
 
   const {
     setError,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
     reset,
+    watch,
   } = form;
 
-  const [type, setType] = useState({});
-
   const isUpdate = values !== undefined;
-  const [imagePreview, setImagePreview] = useState(values?.image || "");
+  const [imagePreview, setImagePreview] = useState(
+    values?.image 
+      ? `${import.meta.env.VITE_BACKEND_URL}/storage/${values.image}`
+      : ""
+  );
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
+    if (!file) return;
 
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("File size exceeds the limit of 5MB.");
-        return;
-      }
+    form.clearErrors("image");
+    form.setValue("image", file, { shouldValidate: true });
 
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please select a valid image file.");
-        return;
-      }
-
-      form.setValue("image", file);
-
-      const fileReader = new FileReader();
-      fileReader.onloadend = () => {
-        setImagePreview(fileReader.result);
-      };
-      fileReader.readAsDataURL(file);
-    }
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleFormSubmit = async (data) => {
-    console.log("Form Data Before Sending:", data);  // Confirm values before sending
-
-    const loaderMsg = isUpdate ? "Updating in progress." : "Adding parent";
-    const loader = toast.loading(loaderMsg);
+  const onSubmit = async (formData) => {
+    const loader = toast.loading(
+      isUpdate ? "Updating type..." : "Creating type..."
+    );
 
     try {
-      // Create a FormData object
-      const formData = new FormData();
+      // Prepare FormData for file upload
+      const submitData = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          submitData.append(key, value);
+        }
+      });
 
-      // Append each field to FormData
-      formData.append("name", data.name);
-      formData.append("code", data.code);
-      formData.append("id", values?.id ||null);
+      const response = await handleSubmit(submitData);
 
-      formData.append("description", data.description);
-
-      // Append the image file if it exists
-      if (data.image instanceof File) {
-        formData.append("image", data.image);
-      }
-
-      // Log FormData entries for debugging
-      let updatedType = { ...type };  // Clone the current type object
-for (let pair of formData.entries()) {
-  console.log(pair[0] + ": " + pair[1]);
-  updatedType[pair[0]] = pair[1];
-}
-setType(updatedType);
-      console.log(type);
-
-
-      // Send the form data
-      const response = await handleSubmit(formData);  // Submit using handleSubmit
-
-      if (response.status === 201) {
-        toast.success('updated with success');
-        reset();
-        setImagePreview("");  // Clear image preview on success
+      if (response?.status === 201 || response?.status === 200) {
+        toast.success(
+          isUpdate 
+            ? "Type updated successfully" 
+            : "Type created successfully"
+        );
+        if (!isUpdate) {
+          reset();
+          setImagePreview("");
+        }
       }
     } catch (error) {
-      if (error.response && error.response.data.errors) {
-        const errorMessages = error.response.data.errors;
-        Object.entries(errorMessages).forEach(([field, message]) => {
-          setError(field, { message });
+      console.error("Submission error:", error);
+      
+      if (error.response?.data?.errors) {
+        Object.entries(error.response.data.errors).forEach(([field, messages]) => {
+          setError(field, { 
+            type: "manual",
+            message: Array.isArray(messages) ? messages.join(", ") : messages
+          });
         });
+      } else {
+        toast.error(
+          error.response?.data?.message || 
+          "An unexpected error occurred"
+        );
       }
-      toast.error('updated with success');
-
     } finally {
       toast.dismiss(loader);
     }
@@ -130,45 +132,48 @@ setType(updatedType);
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} method="POST">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>Name *</FormLabel>
               <FormControl>
-                <Input placeholder="Name" {...field} />
+                <Input placeholder="Enter type name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
 
         <FormField
           control={form.control}
           name="code"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Code</FormLabel>
+              <FormLabel>Code *</FormLabel>
               <FormControl>
-                <Input placeholder="Code" {...field} />
+                <Input placeholder="Enter unique code" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-
         <FormField
           control={form.control}
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="description">Description</FormLabel>
+              <FormLabel>Description</FormLabel>
               <FormControl>
-                <Input id="description" placeholder="Description" {...field} />
+                <Textarea
+                  placeholder="Enter description (optional)"
+                  className="resize-none"
+                  rows={3}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -176,29 +181,58 @@ setType(updatedType);
         />
 
         <FormItem>
-          <FormLabel htmlFor="image">Image</FormLabel>
+          <FormLabel>Image</FormLabel>
           <FormControl>
-            <input
-              type="file"
-              name="image"
-              accept="image/*"
-              onChange={handleFileChange}
-            />
+            <div className="flex flex-col gap-2">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-md file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-blue-50 file:text-blue-700
+                  hover:file:bg-blue-100"
+              />
+              {errors.image && (
+                <p className="text-sm font-medium text-destructive">
+                  {errors.image.message}
+                </p>
+              )}
+            </div>
           </FormControl>
+          
           {imagePreview && (
-            <img
-              src={imagePreview}
-              alt="Image Preview"
-              className="mt-2 w-32 h-32 object-cover"
-            />
+            <div className="mt-2">
+              <p className="text-sm text-muted-foreground mb-1">Preview:</p>
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="rounded-md border w-32 h-32 object-cover"
+              />
+            </div>
           )}
-          <FormMessage />
         </FormItem>
 
-        <Button className="mt-2" type="submit" disabled={isSubmitting}>
-          {isSubmitting && <Loader className="mx-2 my-2 animate-spin" />}
-          {isUpdate ? "Update" : "Create"}
-        </Button>
+        <div className="flex justify-end">
+          <Button 
+            type="submit" 
+            disabled={isSubmitting}
+            className="min-w-[120px]"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isUpdate ? "Updating..." : "Creating..."}
+              </>
+            ) : isUpdate ? (
+              "Update Type"
+            ) : (
+              "Create Type"
+            )}
+          </Button>
+        </div>
       </form>
     </Form>
   );

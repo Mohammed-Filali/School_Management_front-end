@@ -42,16 +42,8 @@ import { Loader, Loader2 } from "lucide-react"
     })
 
     return <>
-        <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue()) ?? ""}
-          onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-      </div>
+        
+       
       <DataTableViewOptions table={table} />
 
 

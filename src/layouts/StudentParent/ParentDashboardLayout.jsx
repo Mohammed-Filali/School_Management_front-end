@@ -1,86 +1,113 @@
-import {Link, Outlet, useNavigate} from "react-router-dom";
-import { LOGIN_ROUTE,PARENT_DUSHBOARD_ROUTE, RedirectRoute} from "../../router/index.jsx";
-import {useEffect, useState,} from "react";
-import {GaugeIcon} from "lucide-react";
-import {ModeToggle} from "../../components/mode-toggle.jsx";
-import {ParentAdministrationSideBar} from "../Administration/ParentAdministrationSideBar.jsx";
-import ParentDropDownMenu from "./ParentDropDownMenu.jsx";
-import { UseUserContext } from "../../context/StudentContext.jsx";
-import { ParentApi } from "../../service/api/student/admins/parenpApi.js";
+import { Link, Outlet, useNavigate } from "react-router-dom";
+import { LOGIN_ROUTE, PARENT_DUSHBOARD_ROUTE, RedirectRoute } from "../../router";
+import { useEffect, useState } from "react";
+import { Gauge, Menu } from "lucide-react";
+import { ModeToggle } from "../../components/mode-toggle";
+import { ParentAdministrationSideBar } from "../Administration/ParentAdministrationSideBar";
+import ParentDropDownMenu from "./ParentDropDownMenu";
+import { UseUserContext } from "../../context/StudentContext";
+import { ParentApi } from "../../service/api/student/admins/parenpApi";
+import IGO from '../../assets/Logo.png';
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
 
-import IGO from '../../assets/Logo.png'
 export default function ParentDashboardLayout() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
-      const { authenticated, setUser, setAuthenticated, logout: contextLogout  } = UseUserContext();
+  const { authenticated, setUser, setAuthenticated, logout: contextLogout } = UseUserContext();
 
-     useEffect(() => {
-       if (authenticated) {
-         setIsLoading(false);
-         ParentApi.getUser()
-           .then(( {data} ) => {
-               setIsLoading(false)
-                console.log(data.data);
-                const {role} = data
-                        if(role !== 'parent') {
-                          navigate(RedirectRoute(role));
-                        }
-              setUser(data);
-             setAuthenticated(true);
-           })
-           .catch((error) => {
-             console.error("Failed to fetch user data:", error);
-
-           });
-       }else if (!authenticated){
-           setIsLoading(false)
-           contextLogout();
-           navigate(LOGIN_ROUTE);
-
-       }
-     }, [authenticated]);
-
-
-    if (isLoading) {
-      return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  useEffect(() => {
+    if (authenticated) {
+      setIsLoading(false);
+      ParentApi.getUser()
+        .then(({ data }) => {
+          setIsLoading(false);
+          const { role } = data;
+          if (role !== 'parent') {
+            navigate(RedirectRoute(role));
+          }
+          setUser(data);
+          setAuthenticated(true);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch user data:", error);
+        });
+    } else if (!authenticated) {
+      setIsLoading(false);
+      contextLogout();
+      navigate(LOGIN_ROUTE);
     }
+  }, [authenticated]);
 
-  return <>
-    <header>
-    <div className="bg-white  max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="flex flex-col space-y-4 w-full max-w-md p-8">
+          <Skeleton className="h-12 w-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-            <div className=" flex items-center">
-                  <img src={IGO} className="start-0" width={'200px'} alt="" />
-                </div>
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-background border-b">
+        <div className="container flex h-16 items-center justify-between px-4">
+          {/* Mobile Sidebar Trigger */}
+          <div className="flex items-center lg:hidden">
+            <Sheet>
+              <SheetTrigger>
+                <Menu className="h-6 w-6" />
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[280px] p-0">
+                <ParentAdministrationSideBar className="flex h-full" />
+              </SheetContent>
+            </Sheet>
+          </div>
 
+          {/* Logo */}
+          <Link to={PARENT_DUSHBOARD_ROUTE} className="hidden lg:flex items-center">
+            <img src={IGO} className="h-10" alt="School Logo" />
+          </Link>
 
-            <div>
-          <ul className="flex text-white place-items-center">
-            <li className="ml-5 px-2 py-1">
-              <Link className="flex items-center  text-gray-900 " to={PARENT_DUSHBOARD_ROUTE}><GaugeIcon className={'mx-1'}/>Dashboard</Link>
-            </li>
-            <li className="ml-5 px-2 py-1">
-              <ParentDropDownMenu/>
-            </li>
-            <li className="ml-5 px-2 py-1">
-              <ModeToggle/>
-            </li>
-          </ul>
+          {/* Navigation */}
+          <nav className="flex items-center space-x-4">
+            <Link 
+              to={PARENT_DUSHBOARD_ROUTE} 
+              className="hidden sm:flex items-center text-sm font-medium transition-colors hover:text-primary"
+            >
+              <Gauge className="mr-2 h-4 w-4" />
+              Dashboard
+            </Link>
+            
+            <div className="flex items-center space-x-2">
+              <ModeToggle />
+              <ParentDropDownMenu />
             </div>
+          </nav>
         </div>
-      </div>
-    </header>
-    <hr/>
-    <main className={'mx-auto px-10 space-y-4 py-4'}>
-      <div className="flex">
-        <div className={'w-full md:w-2/12 border mr-2 rounded-l'}>
-          <ParentAdministrationSideBar/>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 container grid lg:grid-cols-12 gap-4 px-4 py-6">
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:block lg:col-span-2">
+          <ParentAdministrationSideBar className="h-full" />
+        </aside>
+
+        {/* Content Area */}
+        <div className="lg:col-span-10">
+          <div className="rounded-lg border bg-background p-6 shadow-sm">
+            <Outlet />
+          </div>
         </div>
-        <div className={'w-full md:w-10/12 border rounded-l'}>
-          <Outlet/>
-        </div>
-      </div>
-    </main>
-  </>
+      </main>
+    </div>
+  );
 }

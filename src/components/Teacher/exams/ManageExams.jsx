@@ -1,63 +1,58 @@
-
-
-import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
-
-// import AdminParentList from "../data-table/AdminParentList.jsx";
-import { Tabs ,TabsContent, TabsList, TabsTrigger} from "@radix-ui/react-tabs";
-import { Separator } from "@radix-ui/react-dropdown-menu";
-import TeacherExamsList from "./TeacherExamsliste";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import ExamUpsertForm from "./ExamUpsertForm";
 import { ExamApi } from "../../../service/api/student/teachers/ExamApi";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Plus } from "lucide-react";
+import TeacherExamsList from "./TeacherExamsliste";
+import { Separator } from "@radix-ui/react-dropdown-menu";
 
 export default function ManageExams() {
+  return (
+    <div className="w-full">
+      <Card className="border-none shadow-none">
+        <CardHeader className="px-0 pt-0">
+          <CardTitle className="text-2xl font-bold tracking-tight">
+            Exam Management
+          </CardTitle>
+        </CardHeader>
+        
+        <CardContent className="px-0">
+          <Tabs defaultValue="exams_list" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 max-w-md">
+              <TabsTrigger value="exams_list">Exams List</TabsTrigger>
+              <TabsTrigger value="add_exam">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Exam
+              </TabsTrigger>
+            </TabsList>
 
-
-    return (
-      <>
-        <div className="relative overflow-x-auto w-full">
-          <div className="hidden md:block">
-            <div className="bg-background">
-              <div className="grid">
-                <div className="col-span-3 lg:col-span-4">
-                  <div className="h-full px-4 py-6 lg:px-8">
-                    {/* Change w-[500px] to w-full to make it take the full width */}
-                    <Tabs defaultValue="parents_list" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="parents_list">Exams</TabsTrigger>
-                        <TabsTrigger value="add_parent">Add new Exam</TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value="parents_list" className="border-none p-0 outline-none">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-1 w-full">
-                            <h2 className="text-2xl font-semibold tracking-tight w-full">
-                              All Exams
-                            </h2>
-                            <TeacherExamsList />
-                          </div>
-                        </div>
-                        <Separator className="my-4" />
-                        <div className="relative">
-                          <ScrollArea>
-                            <div className="flex space-x-4 pb-4"></div>
-                            <ScrollBar orientation="horizontal" />
-                          </ScrollArea>
-                        </div>
-                      </TabsContent>
-
-                      <TabsContent value="add_parent">
-                        <div className="space-y-1">
-                          <ExamUpsertForm handleSubmit={(values) => ExamApi.create(values)}  />
-                        </div>
-                        <Separator className="my-4" />
-                      </TabsContent>
-                    </Tabs>
-                  </div>
-                </div>
+            <TabsContent value="exams_list" className="mt-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">All Exams</h3>
+                <Separator />
+                <ScrollArea className="h-[calc(100vh-220px)]">
+                  <TeacherExamsList />
+                </ScrollArea>
               </div>
-            </div>
-          </div>
-        </div>
-      </>
-    );
-  }
+            </TabsContent>
+
+            <TabsContent value="add_exam" className="mt-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Create New Exam</h3>
+                <Separator />
+                <Card>
+                  <CardContent className="pt-6">
+                    <ExamUpsertForm 
+                      handleSubmit={(values) => ExamApi.create(values)} 
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

@@ -1,63 +1,76 @@
-
-
-import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
-
-// import AdminParentList from "../data-table/AdminParentList.jsx";
-import { Tabs ,TabsContent, TabsList, TabsTrigger} from "@radix-ui/react-tabs";
-import { Separator } from "@radix-ui/react-dropdown-menu";
-import AdminTeacherList from "../data-table/teachers/AdminTeacherList.jsx";
-import TeacherUpsertForm from "../forms/TeacherUpsertForm.jsx";
-import { TeacherApi } from "../../../service/api/student/teacherApi.js";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import AdminTeacherList from "../data-table/teachers/AdminTeacherList";
+import TeacherUpsertForm from "../forms/TeacherUpsertForm";
+import { TeacherApi } from "../../../service/api/student/teacherApi";
+import { Card } from "@/components/ui/card";
 
 export default function ManageTeachers() {
+  const handleCreateTeacher = async (values) => {
+    try {
+      const response = await TeacherApi.create(values);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
 
+  return (
+    <div className="w-full px-4 sm:px-6 lg:px-8">
+      <Card className="p-4 md:p-6">
+        <Tabs defaultValue="teachers_list" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 gap-2 md:w-[400px]">
+            <TabsTrigger value="teachers_list">Teachers List</TabsTrigger>
+            <TabsTrigger value="add_teacher">Add New Teacher</TabsTrigger>
+          </TabsList>
 
-    return (
-      <>
-        <div className="relative overflow-x-auto w-full">
-          <div className="hidden md:block">
-            <div className="bg-background">
-              <div className="grid">
-                <div className="col-span-3 lg:col-span-4">
-                  <div className="h-full px-4 py-6 lg:px-8">
-                    {/* Change w-[500px] to w-full to make it take the full width */}
-                    <Tabs defaultValue="parents_list" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="parents_list">Teachers</TabsTrigger>
-                        <TabsTrigger value="add_parent">Add new teacher</TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value="parents_list" className="border-none p-0 outline-none">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-1 w-full">
-                            <h2 className="text-2xl font-semibold tracking-tight w-full">
-                              All teachers
-                            </h2>
-                            <AdminTeacherList />
-                          </div>
-                        </div>
-                        <Separator className="my-4" />
-                        <div className="relative">
-                          <ScrollArea>
-                            <div className="flex space-x-4 pb-4"></div>
-                            <ScrollBar orientation="horizontal" />
-                          </ScrollArea>
-                        </div>
-                      </TabsContent>
-
-                      <TabsContent value="add_parent">
-                        <div className="space-y-1">
-                          <TeacherUpsertForm handleSubmit={(values) => TeacherApi.create(values)}  />
-                        </div>
-                        <Separator className="my-4" />
-                      </TabsContent>
-                    </Tabs>
-                  </div>
-                </div>
-              </div>
+          <TabsContent 
+            value="teachers_list" 
+            className="mt-6 space-y-4"
+          >
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+                All Teachers
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Manage all registered teachers in the system
+              </p>
             </div>
-          </div>
-        </div>
-      </>
-    );
-  }
+            
+            <Separator className="my-4" />
+            
+            <ScrollArea className="w-full rounded-md">
+              <AdminTeacherList />
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </TabsContent>
+
+          <TabsContent 
+            value="add_teacher" 
+            className="mt-6 space-y-4"
+          >
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+                Add New Teacher
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Fill out the form to register a new teacher
+              </p>
+            </div>
+            
+            <Separator className="my-4" />
+            
+            <TeacherUpsertForm 
+              handleSubmit={handleCreateTeacher} 
+              onSuccess={() => {
+                // You might want to add success handling here
+                // For example, switch back to the list tab
+              }}
+            />
+          </TabsContent>
+        </Tabs>
+      </Card>
+    </div>
+  );
+}

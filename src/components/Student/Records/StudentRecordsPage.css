@@ -1,0 +1,55 @@
+.student-records-container {
+    padding: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .records-card {
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (max-width: 768px) {
+    .student-records-container {
+      padding: 0.5rem;
+    }
+  }
+  
+  /* Tabs styles */
+  [data-radix-tabs] {
+    width: 100%;
+  }
+  
+  [data-radix-tabs-trigger] {
+    padding: 0.5rem 1rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.25rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  
+  [data-radix-tabs-trigger][data-state="active"] {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+  
+  [data-radix-tabs-trigger][data-state="inactive"] {
+    background-color: hsl(var(--muted));
+    color: hsl(var(--foreground));
+  }
+  
+  [data-radix-tabs-trigger][data-state="inactive"]:hover {
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+  
+  /* Badge styles */
+  .badge {
+    border-radius: 9999px;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }

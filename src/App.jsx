@@ -7,18 +7,17 @@ import { Toaster } from "@/components/ui/sonner";
 import { Provider } from "react-redux";
 import { Store } from "./redux/store.js";
 
-
+// Create a custom theme (optional but recommended)
 
 function App() {
-
   return (
     <Provider store={Store}>
-      <StudentContext>
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-          <RouterProvider router={Router} />
-          <Toaster />
+          <StudentContext>
+            <RouterProvider router={Router} />
+            <Toaster />
+          </StudentContext>
         </ThemeProvider>
-      </StudentContext>
     </Provider>
   );
 }

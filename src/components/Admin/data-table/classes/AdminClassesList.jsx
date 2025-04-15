@@ -1,292 +1,242 @@
 import { useEffect, useState } from "react";
-
 import { DataTable } from "../DataTable";
-
 import { DataTableColumnHeader } from "../DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
-
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-  } from "@/components/ui/alert-dialog"
-  import { toast } from "sonner"
-
-
-  import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-  } from "@/components/ui/sheet"
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Loader2, MoreVertical, Trash2, Edit, BookOpen, Plus } from "lucide-react";
 import ClasseUpsertForm from "../../forms/ClasseUpsertForm";
+import moment from "moment";
+import { Badge } from "@/components/ui/badge";
 import { ClasseApi } from "../../../../service/api/student/admins/ClasseApi";
-import ClaseCourForm from "../../forms/ClasseCoursForm";
-import { ClasseCoursApi } from "../../../../service/api/student/admins/ClasseCoursApi";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import {  Loader2, MoreVertical } from "lucide-react";
-import { CourApi } from "../../../../service/api/student/admins/CourApi";
-import moment from "moment/moment";
-
-
-
-
-
-
-
 
 export default function AdminClasseList() {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState([]);
+ 
 
-    const [loading ,setLoading]=useState(true)
-    const[data , setData] =useState([])
-    const[CoursClass, setCoursClass] =useState([])
-    const [cours , srtCours] = useState([])
-    useEffect(()=>{
-        ClasseApi.all().then(({data})=>{
-           setData(data.data)
-        })
-        CourApi.all().then(({data})=>{
-            srtCours(data.data)
-         })
-        ClasseApi.types()
-                     .then(({ data }) => {
-                        setLoading(false)
-                       const classeTypeCourses = data?.data?.flatMap(item => item.classe_type_course || []); // Combine all classe_type_course arrays
-                       if (classeTypeCourses.length > 0) {
-                         setCoursClass(classeTypeCourses);
-                         // setCours(classeTypeCourses); // Uncomment if using React state
-                       } else {
-                         console.warn('No classe_type_course found in the response');
-                       }
-                     })
-    },[])
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [classesResponse, coursResponse, typesResponse] = await Promise.all([
+          ClasseApi.all(),
+      
+        ]);
 
+        setData(classesResponse.data.data);
 
-    const AdminClassesColumns =[
-        {
-            accessorKey:'id',
-            header: ({ column }) => {
-                return <DataTableColumnHeader column={column} title="#ID" />
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load data");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-              },
-        },
-        {
-            accessorKey :'name',
-            header: ({ column }) => {
-                return <DataTableColumnHeader column={column} title=" Name" />
+    fetchData();
+  }, []);
 
-              },
-        },
-        {
-            accessorKey :'class_type_id',
-            header: ({ column }) => {
-                return <DataTableColumnHeader column={column} title="Type Classe" />
+  const handleDelete = async (id, name) => {
+    try {
+      const deletingLoader = toast.loading(`Deleting ${name}...`);
+      const { status, message } = await ClasseApi.delete(id);
 
-              }
-        },
+      if (status === 201) {
+        setData(data.filter(classe => classe.id !== id));
+        toast.success(`Class "${name}" deleted successfully`);
+      } else {
+        toast.error(message || "Failed to delete class");
+      }
+    } catch (error) {
+      toast.error("An error occurred while deleting");
+      console.error(error);
+    } finally {
+      toast.dismiss(deletingLoader);
+    }
+  };
 
-        {
-            accessorKey :'updated_at',
-            header: ({ column }) => {
-                return <DataTableColumnHeader column={column} title="Updated At" />
+  const AdminClassesColumns = [
+    {
+      accessorKey: "id",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="ID" />
+      ),
+      cell: ({ row }) => (
+        <Badge variant="outline" className="font-mono">
+          {row.getValue("id")}
+        </Badge>
+      ),
+      size: 80,
+    },
+    {
+      accessorKey: "name",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Class Name" />
+      ),
+      cell: ({ row }) => (
+        <span className="font-medium">{row.getValue("name")}</span>
+      ),
+    },
+    {
+      accessorKey: "class_type_id",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Type" />
+      ),
+      cell: ({ row }) => {
+        const typeId = row.getValue("class_type_id");
+        const typeName = typeId === 1 ? "Primary" : typeId === 2 ? "Secondary" : "Unknown";
+        return <Badge variant="secondary">{typeName}</Badge>;
+      },
+    },
+    {
+      accessorKey: "updated_at",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Last Updated" />
+      ),
+      cell: ({ row }) => {
+        const date = row.getValue("updated_at");
+        return (
+          <div className="flex flex-col">
+            <span>{moment(date).format("MMM D, YYYY")}</span>
+            <span className="text-xs text-muted-foreground">
+              {moment(date).fromNow()}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const classe = row.original;
+        const { id, name } = classe;
 
-              },
-            cell: ({ row }) => {
-                const date = (row.getValue("updated_at"))
-                const formated =  moment(new Date(date).toString()).format('d-m-y')
-                return <>{formated}</>
-              },
-        },
-        {
-            id: "actions",
-            cell: ({ row }) => {
-            const admin = row.original
-            const {id,name,class_type_id} = admin
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
 
-              return <>
+              {/* Update Action */}
+              <Sheet>
+                <SheetTrigger asChild>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Update
+                  </DropdownMenuItem>
+                </SheetTrigger>
+                <SheetContent className="sm:max-w-md">
+                  <SheetHeader>
+                    <SheetTitle>Update Class</SheetTitle>
+                    <SheetDescription>
+                      Make changes to {name} here.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="py-4">
+                    <ClasseUpsertForm
+                      handleSubmit={(values) => {
+                        return ClasseApi.update(values, id).then(() => {
+                          setData(data.map(c => 
+                            c.id === id ? { ...c, ...values } : c
+                          ));
+                          toast.success("Class updated successfully");
+                        });
+                      }}
+                      values={classe}
+                    />
+                  </div>
+                </SheetContent>
+              </Sheet>
 
-<DropdownMenu className="absolute ">
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0   relative">
-          <span className="sr-only">Open menu</span>
-          <MoreVertical className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-white rounded-md text-center shadow-md w-40 z-50 ">
-        <DropdownMenuLabel className="text-gray-700 font-semibold">Actions</DropdownMenuLabel>
-        <DropdownMenuSeparator className="border-gray-300" />
+             
 
-        {/* Delete Action */}
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button className="w-full bg-gray-50 text-left px-4 py-2 text-gray-700 hover:text-red-700 hover:bg-gray-200 rounded-md">Delete</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  Are you sure you want to delete <span className="font-bold">{name}</span>?
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. The record will be permanently deleted.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick ={async()=>{
+              <DropdownMenuSeparator />
 
-                    const deletingLoader = toast.loading('Deleting in progress')
-                    await ClasseApi.delete(id).then(({status ,message})=>{
+              {/* Delete Action */}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem 
+                    onSelect={(e) => e.preventDefault()}
+                    className="text-red-600 focus:bg-red-50 focus:text-red-700"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Delete {name}?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete the class and cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={() => handleDelete(id, name)}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ];
 
-                    if(status==201){
-                    toast.dismiss(deletingLoader)
-                    setData(data.filter((Classe)=>{
-                        return Classe.id !=id
-                    }));
+  if (loading) {
+    return (
+      <div className="w-full h-64 flex items-center justify-center">
+        <Loader2 className="w-12 h-12 animate-spin text-primary" />
+      </div>
+    );
+  }
 
-                    toast.success(message)
-                    }else{
-                    toast(message)
-                    }
-
-
-                    })
-
-                    }}>Delete</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog><br/>
-
-        {/* Update Action */}
-          <Sheet >
-            <SheetTrigger className="w-full">
-              <Button className="w-full bg-gray-50 text-left px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-200 rounded-md">Update</Button>
-            </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle>Update Class {name}</SheetTitle>
-                <SheetDescription>
-                  Make changes to your class here. Click save when you're done.
-                </SheetDescription>
-                <ClasseUpsertForm
-                  handleSubmit={(values) =>
-                    ClasseApi.update(values, id).then(() => {
-                      setData((prevData) =>
-                        prevData.map((classe) =>
-                          classe.id === id ? { ...classe, ...values } : classe
-                        )
-                      );
-                      toast.success("Class updated successfully");
-                    })
-                  }
-                  values={{ admin }}
-                />
-              </SheetHeader>
-            </SheetContent>
-          </Sheet><br />
-
-        {/* Add Cour Action */}
-          <Sheet>
-            <SheetTrigger className="w-full">
-              <Button className="w-full bg-gray-50 text-left px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-200 rounded-md"
-              >Add Cour</Button>
-            </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle>Add Cour to {name}</SheetTitle>
-                <SheetDescription>
-                  Add a new course to this class. Click save when you're done.
-                </SheetDescription>
-                <ClaseCourForm
-                  handleSubmit={(values) =>
-                    ClasseCoursApi.create(values).then(({ status, message }) => {
-                      if (status === 201) {
-                        toast.success(message);
-                      } else {
-                        toast.error(message || "Failed to add course");
-                      }
-                    })
-                  }
-                  class_id={class_type_id}
-                />
-              </SheetHeader>
-            </SheetContent>
-          </Sheet>
-
-
-          <Sheet>
-  <SheetTrigger className="w-full">
-    <Button className="w-full bg-gray-50 text-left px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-200 rounded-md">
-      Cours
-    </Button>
-  </SheetTrigger>
-  <SheetContent>
-    <SheetHeader>
-      <SheetTitle>Cours of {name}</SheetTitle>
-      <SheetDescription>
-        Add a new course to this class. Click save when you're done.
-      </SheetDescription>
-      {CoursClass && CoursClass.length > 0 ?
-        <div
-            className="table-responsive w-100"
-        >
-            <table
-                className="table w-100 "
-            >
-                <thead>
-                    <tr>
-                        <th scope="col" >Cour</th>
-                        <th scope="col">Coef</th>
-
-                    </tr>
-                </thead>
-                <tbody>
-                    {
-                        CoursClass.map((v) =>{
-                            const cour =cours.find(c=>{
-                                return c.id ===v.id
-                            })
-                            return<><tr key={v.id} className="w-100">
-
-                            <td>{cour&&cour.name}</td>
-                            <td>{v.coef}</td>
-                            </tr></>}
-
-                          )
-                    }
-
-
-                </tbody>
-            </table>
-        </div>
-
-
-       : <div>
-        <p>No courses available.</p>
-        </div>}
-    </SheetHeader>
-  </SheetContent>
-</Sheet>
-      </DropdownMenuContent>
-    </DropdownMenu>
-                        </>
-            },
-          },
-    ]
-
-
-    if (loading) return <div><div className="w-full flex items-center justify-center">
-  <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
-</div></div>;
-return<>
-    <DataTable columns={AdminClassesColumns} data={data} />
-</>
-
+  return (
+    <div className="space-y-4">
+      <DataTable 
+        columns={AdminClassesColumns} 
+        data={data} 
+        emptyMessage="No classes found"
+      />
+    </div>
+  );
 }

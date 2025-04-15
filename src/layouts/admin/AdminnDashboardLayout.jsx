@@ -1,92 +1,138 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { GaugeIcon } from "lucide-react";
+import { GaugeIcon, Loader2, MenuIcon, XIcon } from "lucide-react";
 import AdminDropDownManu from "./AdminDropDown";
-import { STUDENT_DUSHBOARD_ROUTE, LOGIN_ROUTE, RedirectRoute, ADMIN_DUSHBOARD_ROUTE } from "../../router";
-import { AdminAdministrationSideBare  } from "../administration/AdminAdministrationSideBare ";
+import { LOGIN_ROUTE, RedirectRoute, ADMIN_DUSHBOARD_ROUTE } from "../../router";
 import { ModeToggle } from "../../components/mode-toggle";
 import { useEffect, useState } from "react";
 import { UseUserContext } from "../../context/StudentContext";
 import { AdminApi } from "../../service/api/student/admins/adminApi";
-import IGO from '../../assets/Logo.png'
+import IGO from '../../assets/Logo.png';
+import { AdminAdministrationSideBare } from "../administration/AdminAdministrationSideBare ";
 
 export default function AdminnDashboardLayout() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { authenticated, setUser, setAuthenticated, logout: contextLogout } = UseUserContext();
 
   useEffect(() => {
     if (authenticated) {
-      setIsLoading(false);
       AdminApi.getUser()
         .then(({ data }) => {
-            setIsLoading(false)
-            const {role} = data
-                    if(role !== 'admin') {
-                      navigate(RedirectRoute(role));
-                    }
+          setIsLoading(false);
+          const { role } = data;
+          if (role !== 'admin') {
+            navigate(RedirectRoute(role));
+          }
           setUser(data);
           setAuthenticated(true);
         })
         .catch((error) => {
           console.error("Failed to fetch user data:", error);
-
+          setIsLoading(false);
+          contextLogout();
+          navigate(LOGIN_ROUTE);
         });
-    }else if (!authenticated){
-        setIsLoading(false)
-        contextLogout();
-        navigate(LOGIN_ROUTE);
-
+    } else {
+      setIsLoading(false);
+      contextLogout();
+      navigate(LOGIN_ROUTE);
     }
   }, [authenticated]);
 
-
-
-
   if (isLoading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   return (
-    <>
-      <header>
-          <div className="bg-white  max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between h-16">
-
-                  <div className=" flex items-center">
-                        <img src={IGO} className="start-0" width={'200px'} alt="" />
-                      </div>
-
-
-                  <div>
-                <ul className="flex text-white place-items-center">
-                  <li className="ml-5 px-2 py-1">
-                    <Link className="flex items-center  text-gray-900 " to={ADMIN_DUSHBOARD_ROUTE}><GaugeIcon className={'mx-1'}/>Dashboard</Link>
-                  </li>
-                  <li className="ml-5 px-2 py-1">
-                    <AdminDropDownManu/>
-                  </li>
-                  <li className="ml-5 px-2 py-1">
-                    <ModeToggle/>
-                  </li>
-                </ul>
-                  </div>
-              </div>
-            </div>
-          </header>
-      <hr />
-      <main className="mx-auto px-10 space-y-4 py-4">
-        <div className="flex">
-          <div className="w-100 md:w-1/4">
-            <AdminAdministrationSideBare  />
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between px-4">
+          {/* Mobile menu button and logo */}
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="md:hidden text-muted-foreground"
+            >
+              {sidebarOpen ? (
+                <XIcon className="h-6 w-6" />
+              ) : (
+                <MenuIcon className="h-6 w-6" />
+              )}
+            </button>
+            <img 
+              src={IGO} 
+              className="h-10 w-auto" 
+              alt="School Logo" 
+            />
           </div>
-          <div className="w-100 md:w-3/4">
+
+          {/* Navigation */}
+          <nav className="flex items-center space-x-4">
+            <Link 
+              to={ADMIN_DUSHBOARD_ROUTE} 
+              className="hidden sm:flex items-center text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
+            >
+              <GaugeIcon className="mr-2 h-4 w-4" />
+              Dashboard
+            </Link>
+            
+            <div className="flex items-center space-x-2">
+              <ModeToggle />
+              <AdminDropDownManu />
+            </div>
+          </nav>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1">
+        <div className="container flex flex-col md:flex-row gap-4 py-6 px-4">
+          {/* Mobile Sidebar Overlay */}
+          {sidebarOpen && (
+            <div 
+              className="fixed inset-0 z-40 bg-black/50 md:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+
+          {/* Sidebar - Mobile and Desktop */}
+          <div className={`fixed md:relative z-50 md:z-auto w-64 h-full transition-all duration-300 ease-in-out
+            ${sidebarOpen ? 'left-0' : '-left-64'} md:left-0`}
+          >
+            <div className="h-full bg-background border-r">
+              <AdminAdministrationSideBare />
+            </div>
+          </div>
+          
+          {/* Content Area */}
+          <div className="flex-1 pt-4 md:pt-0">
             <Outlet />
           </div>
         </div>
       </main>
-      {/* <footer className="bg-gray-800 text-white text-center py-4">
-        © 2024 Your School Name. All rights reserved.
-      </footer> */}
-    </>
+
+      {/* Footer */}
+      <footer className="border-t py-6">
+        <div className="container flex flex-col items-center justify-between gap-4 md:flex-row px-4">
+          <p className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} Your School Name. All rights reserved.
+          </p>
+          <div className="flex items-center space-x-4">
+            <Link to="#" className="text-sm text-muted-foreground hover:text-primary">
+              Privacy Policy
+            </Link>
+            <Link to="#" className="text-sm text-muted-foreground hover:text-primary">
+              Terms of Service
+            </Link>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }

@@ -9,7 +9,7 @@ export const ExamApi = {
       all: async () => {
         return await AxiosClient.get('api/teacher/Exams')
       },
-      update: async (values,id) => {
+      update: async (id,values) => {
         return await AxiosClient.patch(`api/teacher/Exams/${id}`, {...values, id})
       },
       delete: async (id) => {
@@ -25,6 +25,9 @@ export const ExamApi = {
       },
       allRecords: async () => {
         return await AxiosClient.get('api/teacher/Records')
+      },
+      createTotal: async (values) => {
+        return await AxiosClient.post('api/teacher/totalRecords', values)
       },
 }
 

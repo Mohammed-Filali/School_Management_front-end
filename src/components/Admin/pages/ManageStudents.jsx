@@ -1,105 +1,142 @@
-
-
-import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
-
-// import AdminParentList from "../data-table/AdminParentList.jsx";
-import { Tabs ,TabsContent, TabsList, TabsTrigger} from "@radix-ui/react-tabs";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import { UseUserContext } from "../../../context/StudentContext.jsx";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Separator } from "@radix-ui/react-dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Separator
+} from "@radix-ui/react-dropdown-menu";
 import StudentUpsertForm from "../forms/StudentUpsertForm.jsx";
 import AdminStudentList from "../data-table/students/AdminStudentList.jsx";
-import { StudentApi } from "../../../service/api/student/studentApi.js";
-import { AdminApi } from "../../../service/api/student/admins/adminApi.js";
-import { useEffect, useState } from "react";
 import { ClasseApi } from "../../../service/api/student/admins/ClasseApi.js";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import { AdminApi } from "../../../service/api/student/admins/adminApi.js";
 
 export default function ManageStudents() {
-    const { user } = UseUserContext();
-    const [Clas,setClas] = useState([]);
-    const [selectedClass,setSelectedClass]=useState()
+  const { user } = UseUserContext();
+  const [classes, setClasses] = useState([]);
+  const [selectedClass, setSelectedClass] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(()=>{
-        ClasseApi.all().then(({data})=>{
-            setClas(data.data)
-        })
-    },[])
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const { data } = await ClasseApi.all();
+        setClasses(data.data);
+        if (data.data.length > 0) {
+          setSelectedClass(data.data[0]); // Select first class by default
+        }
+      } catch (error) {
+        console.error("Error fetching classes:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    return (
-      <>
-        <div className="relative overflow-x-auto w-full">
-          <div className="hidden md:block">
-            <div className="bg-background">
-              <div className="grid">
-                <div className="col-span-3 lg:col-span-4">
-                  <div className="h-full px-4 py-6 lg:px-8">
-                    {/* Change w-[500px] to w-full to make it take the full width */}
-                    <Tabs defaultValue="parents_list" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="parents_list">Students</TabsTrigger>
-                        <TabsTrigger value="add_parent">Add new student</TabsTrigger>
-                      </TabsList>
+    fetchClasses();
+  }, []);
 
-                      <TabsContent value="parents_list" className="border-none p-0 outline-none">
-                      <div className="h-full px-4 py-6 lg:px-8">
-                            <DropdownMenu className='absolute'>
-                              <DropdownMenuTrigger className="w-full p-2 rounded-md text-left  ">
-                                {Clas.length > 0 ? "Select a Class" : "No Classes Available"}
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent className="w-full bg-gray-100 z-10 shadow-md rounded-md p-2 ">
-                                {Clas.length > 0 ? (
-                                  Clas.map((classItem) => (
-                                    <DropdownMenuItem
-                                      key={classItem.id}
-                                      onSelect={() => setSelectedClass(classItem)}
-                                      className="cursor-pointer text-gray-900 hover:bg-gray-200 rounded-md p-2"
-                                    >
-                                      {classItem.name}
-                                    </DropdownMenuItem>
-                                  ))
-                                ) : (
-                                  <DropdownMenuItem disabled className="p-2 ">
-                                    No Classes Available
-                                  </DropdownMenuItem>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+  return (
+    <div className="w-full p-4 md:p-6 lg:p-8">
+      <div className="bg-background rounded-lg shadow-sm border">
+        <Tabs defaultValue="students_list" className="w-full">
+          <div className="p-4 border-b">
+            <TabsList className="grid w-full grid-cols-2 gap-2">
+              <TabsTrigger 
+                value="students_list" 
+                className="data-[state=active]:bg-primary data-[state=active]:text-white py-2 rounded-md transition-colors"
+              >
+                Students
+              </TabsTrigger>
+              <TabsTrigger 
+                value="add_student" 
+                className="data-[state=active]:bg-primary data-[state=active]:text-white py-2 rounded-md transition-colors"
+              >
+                Add New Student
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-                            <div className="mt-4">
-                              {selectedClass ? (
-                                <div>
-                                  <h2 className="text-2xl font-semibold tracking-tight">
-                                    {selectedClass.name}
-                                  </h2>
-                                  <AdminStudentList classe_id={selectedClass.id} />
-                                  {console.log(selectedClass.id)}
-                                  <Separator className="my-4" />
-                                  <div className="relative">
-                                    <ScrollArea>
-                                      <div className="flex space-x-4 pb-4"></div>
-                                      <ScrollBar orientation="horizontal" />
-                                    </ScrollArea>
-                                  </div>
-                                </div>
-                              ) : (
-                                <p className="text-center ">No class selected.</p>
-                              )}
-                            </div>
-                        </div>
-                      </TabsContent>
-
-                      <TabsContent value="add_parent">
-                        <div className="space-y-1">
-                          <StudentUpsertForm handleSubmit={(values) => AdminApi.createStudent(values)}  />
-                        </div>
-                        <Separator className="my-4" />
-                      </TabsContent>
-                    </Tabs>
+          <TabsContent value="students_list" className="p-4 md:p-6">
+            {loading ? (
+              <div className="flex justify-center items-center h-40">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : (
+              <>
+                <div className="mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <h2 className="text-xl font-semibold">Class Students</h2>
+                    
+                    {classes.length > 0 && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" className="w-full sm:w-auto">
+                            {selectedClass?.name || "Select Class"}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56 bg-background border rounded-md shadow-lg z-50">
+                          {classes.map((classItem) => (
+                            <DropdownMenuItem
+                              key={classItem.id}
+                              onSelect={() => setSelectedClass(classItem)}
+                              className="cursor-pointer px-4 py-2 hover:bg-accent focus:bg-accent"
+                            >
+                              {classItem.name}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
+                  
+                  {classes.length === 0 && (
+                    <div className="mt-4 text-center text-muted-foreground">
+                      No classes available
+                    </div>
+                  )}
                 </div>
+
+                {selectedClass ? (
+                  <div className="space-y-4">
+                    <div className="rounded-lg border p-4">
+                      <h3 className="text-lg font-medium mb-4">
+                        {selectedClass.name} Students
+                      </h3>
+                      <AdminStudentList 
+                        classe_id={selectedClass.id} 
+                        className="w-full overflow-x-auto"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    {classes.length > 0 
+                      ? "Please select a class" 
+                      : "No classes available to display students"}
+                  </div>
+                )}
+              </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="add_student" className="p-4 md:p-6">
+            <div className="max-w-2xl mx-auto">
+              <h2 className="text-xl font-semibold mb-6">Add New Student</h2>
+              <div className="rounded-lg border p-4 md:p-6">
+                <StudentUpsertForm 
+                  handleSubmit={(values) => AdminApi.createStudent(values)} 
+                  classes={classes}
+                />
               </div>
             </div>
-          </div>
-        </div>
-      </>
-    );
-  }
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
