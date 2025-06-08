@@ -3,7 +3,7 @@ import { LOGIN_ROUTE, PARENT_DUSHBOARD_ROUTE, RedirectRoute } from "../../router
 import { useEffect, useState } from "react";
 import { Gauge, Menu } from "lucide-react";
 import { ModeToggle } from "../../components/mode-toggle";
-import { ParentAdministrationSideBar } from "../Administration/ParentAdministrationSideBar";
+import { ParentAdministrationSideBar } from "../administration/ParentAdministrationSideBar";
 import ParentDropDownMenu from "./ParentDropDownMenu";
 import { UseUserContext } from "../../context/StudentContext";
 import { ParentApi } from "../../service/api/student/admins/parenpApi";
