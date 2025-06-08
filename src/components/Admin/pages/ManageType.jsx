@@ -20,8 +20,8 @@ export default function ManageType() {
       <Card className="p-4 md:p-6">
         <Tabs defaultValue="types_list" className="w-full">
           <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
-            <TabsTrigger value="types_list">Types List</TabsTrigger>
-            <TabsTrigger value="add_type">Add New Type</TabsTrigger>
+            <TabsTrigger value="types_list">Filiéres List</TabsTrigger>
+            <TabsTrigger value="add_type">Add New Filiére</TabsTrigger>
           </TabsList>
 
           <TabsContent 
@@ -30,10 +30,10 @@ export default function ManageType() {
           >
             <div className="space-y-2">
               <h2 className="text-2xl font-semibold tracking-tight">
-                All Types
+                All Filiéres
               </h2>
               <p className="text-sm text-muted-foreground">
-                Manage all available types in the system
+                Manage all available Filiéres in the system
               </p>
             </div>
             
@@ -50,10 +50,10 @@ export default function ManageType() {
           >
             <div className="space-y-2">
               <h2 className="text-2xl font-semibold tracking-tight">
-                Add New Type
+                Add New Filiére
               </h2>
               <p className="text-sm text-muted-foreground">
-                Fill out the form to create a new type
+                Fill out the form to create a new Filiére
               </p>
             </div>
             

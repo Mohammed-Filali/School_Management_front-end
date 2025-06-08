@@ -6,9 +6,13 @@ import { ClasseApi } from "../../../service/api/student/admins/ClasseApi";
 import { Card } from "@/components/ui/card";
 import { List, PlusCircle } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { useDispatch } from "react-redux";
+import { addClasses_count } from "../../../redux/admin/adminCountsList";
+import { toast } from "sonner";
 
 export default function ManageClasses() {
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const dispatch = useDispatch();
 
   return (
     <div className="container mx-auto py-6 px-4">
@@ -51,8 +55,15 @@ export default function ManageClasses() {
             <Separator className="my-4" />
             
             <Card className="p-6">
-              <ClasseUpsertForm 
-                handleSubmit={(values) => ClasseApi.create(values)} 
+              <ClasseUpsertForm
+                handleSubmit={async (values) => {
+                  try {
+                    await ClasseApi.create(values);
+                    dispatch(addClasses_count())
+                  } catch (error) {
+                    
+                  }
+                }}
               />
             </Card>
           </TabsContent>

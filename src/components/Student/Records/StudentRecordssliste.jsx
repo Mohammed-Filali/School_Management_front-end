@@ -163,7 +163,7 @@ export default function StudentRecordsList() {
                           <div>
                             <p className="text-sm text-gray-500">Status</p>
                             <p className="font-medium">
-                              {parseFloat(record.note) >= 50 ? (
+                              {parseFloat(record.note) >= 10 ? (
                                 <span className="text-green-600">Passed</span>
                               ) : (
                                 <span className="text-red-500">Failed</span>

@@ -30,7 +30,6 @@ const cardHover = {
 
 export default function Formations() {
   const [types, setTypes] = useState([]);
-  const [cours, setCours] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedType, setSelectedType] = useState(null);
 
@@ -42,12 +41,10 @@ export default function Formations() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [typesRes, coursRes] = await Promise.all([
+        const [typesRes] = await Promise.all([
           AxiosClient.get('/api/classeTypes'),
-          AxiosClient.get('/api/cours')
         ]);
         setTypes(typesRes.data.data);
-        setCours(coursRes.data.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -92,7 +89,7 @@ export default function Formations() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto min-h-screen">
+    <div className="p-6 max-w-7xl mx-auto min-h-screen ">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -116,8 +113,7 @@ export default function Formations() {
             key={type.id}
             variants={fadeIn}
             whileHover="hover"
-            variants={cardHover}
-            className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 border border-gray-100"
+            className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 border border-gray-100 dark:border-gray-700 text-white"
           >
             <div className="relative h-48 overflow-hidden">
               <img
@@ -132,9 +128,9 @@ export default function Formations() {
               </span>
             </div>
             
-            <div className="p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-2">{type.name}</h3>
-              <p className="text-gray-600 mb-4 line-clamp-2">
+            <div className="p-6 dark:bg-gray-800 text-white rounded-b-xl">
+              <h3 className="text-xl font-bold text-gray-800 mb-2 dark:text-white">{type.name}</h3>
+              <p className="text-gray-600 mb-4 line-clamp-2 dark:text-white">
                 {type.description || "No description available"}
               </p>
               
@@ -153,92 +149,87 @@ export default function Formations() {
 
       {/* Modal */}
       <Modal
-        isOpen={!!selectedType}
-        onRequestClose={() => setSelectedType(null)}
-        contentLabel="Formation Details"
-        className="modal-content bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-auto my-12 outline-none"
-        overlayClassName="modal-overlay fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
-        closeTimeoutMS={300}
-      >
-        {selectedType && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="p-8"
-          >
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h2 className="text-3xl font-bold text-gray-800">{selectedType.name}</h2>
-                <p className="text-blue-600 font-medium">{selectedType.code}</p>
-              </div>
-              <button
-                onClick={() => setSelectedType(null)}
-                className="text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+  isOpen={!!selectedType}
+  onRequestClose={() => setSelectedType(null)}
+  contentLabel="Formation Details"
+  className="modal-content bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-auto my-12 outline-none max-h-[90vh] "
+  overlayClassName="modal-overlay fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+  closeTimeoutMS={300}
+>
+  {selectedType && (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      className="p-8 dark:bg-gray-800 text-white rounded-xl"
+    >
+      <div className="flex justify-between items-start mb-6 dark:bg-gray-800 text-white rounded-xl">
+        <div >
+          <h2 className="text-3xl font-bold text-gray-800 dark:text-white">{selectedType.name}</h2>
+          <p className="text-blue-600 font-medium">{selectedType.code}</p>
+        </div>
+        <button
+          onClick={() => setSelectedType(null)}
+          className="text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
 
-            <div className="mb-8">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Description</h3>
-              <p className="text-gray-600">
-                {selectedType.description || "No detailed description available for this formation."}
-              </p>
-            </div>
+      <div className="mb-8 dark:bg-gray-800 text-white rounded-xl">
+        <h3 className="text-xl font-semibold text-gray-800 mb-4 dark:text-white">Description</h3>
+        <p className="text-gray-600 dark:text-gray-300">
+          {selectedType.description || "No detailed description available for this formation."}
+        </p>
+      </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">Classes</h3>
-                {selectedType.classe?.length > 0 ? (
-                  <ul className="space-y-4">
-                    {selectedType.classe.map((classe, index) => (
-                      <li key={index} className="bg-gray-50 p-4 rounded-lg">
-                        <h4 className="font-medium text-gray-800">{classe.name}</h4>
-                        <p className="text-sm text-gray-500 mt-1">Code: {classe.code}</p>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-gray-500">No classes available for this formation type.</p>
-                )}
-              </div>
+      <div className="grid md:grid-cols-2 gap-8 max-h-[60vh] overflow-y-auto pr-2 dark:bg-gray-800 text-white rounded-xl">
+        <div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-4 dark:text-white">Classes</h3>
+          {selectedType.classe?.length > 0 ? (
+            <ul className="space-y-4 dark:bg-gray-800 text-white rounded-xl">
+              {selectedType.classe.map((classe, index) => (
+                <li key={index} className="bg-gray-50 p-4 rounded-lg dark:bg-gray-300 text-white rounded-xl shadow shadow-gray-200">
+                  <h4 className="font-medium text-gray-800">{classe.name}</h4>
+                  <p className="text-sm text-gray-500 mt-1">Code: {classe.code}</p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500">No classes available for this formation type.</p>
+          )}
+        </div>
 
-              <div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">Courses</h3>
-                {selectedType.classe_type_course?.length > 0 ? (
-                  <ul className="space-y-4">
-                    {selectedType.classe_type_course.map((cour, index) => (
-                      <li key={index} className="bg-gray-50 p-4 rounded-lg">
-                        <div className="flex justify-between items-start">
-                          <h4 className="font-medium text-gray-800">{cour.name}</h4>
-                          <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                            Coef: {cour.coef}
-                          </span>
-                        </div>
-                        {CoursFiltre(cours, cour.course_id)}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-gray-500">No courses available for this formation type.</p>
-                )}
-              </div>
-            </div>
+        <div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-4 dark:text-white">Cours</h3>
+          {selectedType.class_type_courses?.length > 0 ? (
+            <ul className="space-y-4">
+              {selectedType.class_type_courses.map((item, index) => (
+                <li key={index} className="bg-gray-50 p-4 rounded-lg dark:bg-gray-300 text-white rounded-xl shadow shadow-gray-200">
+                  <h4 className="font-medium text-gray-800">
+                    {item.course?.name || "Cours sans nom"}
+                  </h4>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Coefficient : {item.coef} — Masse horaire : {item.masseH}h
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Description : {item.course?.desc || "Pas de description"}
+                  </p>
+                  <p className="text-sm text-gray-500">ID Enseignant : {item.teacher_id}</p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500">Aucun cours associé à cette formation.</p>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  )}
+</Modal>
 
-            <div className="mt-8 flex justify-end">
-              <button
-                onClick={() => setSelectedType(null)}
-                className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors duration-300 font-medium"
-              >
-                Close
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </Modal>
     </div>
   );
 }

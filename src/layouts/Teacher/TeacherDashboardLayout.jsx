@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import { UseUserContext } from "../../context/StudentContext.jsx";
 import { Gauge, Menu, X, Loader2 } from "lucide-react";
 import { ModeToggle } from "../../components/mode-toggle.jsx";
-import { TeacherAdministrationSideBar } from "../Administration/TeacherAdministrationSideBar.jsx";
 import { LOGIN_ROUTE, RedirectRoute, TEACHER_DASHBOARD_ROUTE } from "../../router/index.jsx";
 import TeacherDropDownMenu from "./TeacherDropDownMenu.jsx";
 import { TeacherApi } from "../../service/api/student/teacherApi.js";
 import IGO from '../../assets/Logo.png';
+import { TeacherAdministrationSideBar } from "../administration/TeacherAdministrationSideBar.jsx";
 
 export default function TeacherDashboardLayout() {
   const navigate = useNavigate();

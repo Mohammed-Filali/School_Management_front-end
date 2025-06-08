@@ -83,9 +83,7 @@ function TypeUpsertForm({ handleSubmit, values }) {
   };
 
   const onSubmit = async (formData) => {
-    const loader = toast.loading(
-      isUpdate ? "Updating type..." : "Creating type..."
-    );
+   
 
     try {
       // Prepare FormData for file upload
@@ -96,37 +94,18 @@ function TypeUpsertForm({ handleSubmit, values }) {
         }
       });
 
-      const response = await handleSubmit(submitData);
+      await handleSubmit(submitData);
 
-      if (response?.status === 201 || response?.status === 200) {
         toast.success(
           isUpdate 
-            ? "Type updated successfully" 
-            : "Type created successfully"
+            ? "Filiére updated successfully" 
+            : "Filiére created successfully"
         );
-        if (!isUpdate) {
-          reset();
-          setImagePreview("");
-        }
-      }
-    } catch (error) {
-      console.error("Submission error:", error);
+       
       
-      if (error.response?.data?.errors) {
-        Object.entries(error.response.data.errors).forEach(([field, messages]) => {
-          setError(field, { 
-            type: "manual",
-            message: Array.isArray(messages) ? messages.join(", ") : messages
-          });
-        });
-      } else {
-        toast.error(
-          error.response?.data?.message || 
-          "An unexpected error occurred"
-        );
-      }
-    } finally {
-      toast.dismiss(loader);
+    } catch (error) {
+      toast.error("Failed to submit form");
+      throw error;
     }
   };
 
@@ -140,7 +119,7 @@ function TypeUpsertForm({ handleSubmit, values }) {
             <FormItem>
               <FormLabel>Name *</FormLabel>
               <FormControl>
-                <Input placeholder="Enter type name" {...field} />
+                <Input placeholder="Enter Filiére name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

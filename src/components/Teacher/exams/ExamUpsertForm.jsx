@@ -37,7 +37,6 @@ export default function ExamUpsertForm({ handleSubmit, values }) {
 
   const onSubmit = async (formValues) => {
     const isUpdate = !!values;
-    const loader = toast.loading(isUpdate ? "Updating..." : "Creating...");
     try {
       await handleSubmit(formValues);
       toast.success(isUpdate ? "Exam updated" : "Exam created");
@@ -45,9 +44,7 @@ export default function ExamUpsertForm({ handleSubmit, values }) {
     } catch (error) {
       console.error(error);
       toast.error("An error occurred");
-    } finally {
-      toast.dismiss(loader);
-    }
+    } 
   };
 
   const availableClasses = user.classes?.flatMap(t => t.class_type.classe) || [];

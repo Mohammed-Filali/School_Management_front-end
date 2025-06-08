@@ -27,7 +27,7 @@ export const SParentApi = {
       },
 
       update_Password : async (values)=>{
-        const {data} = await AxiosClient.post("/api/student/update-password", values )
+        const {data} = await AxiosClient.post("/api/parent/update-password", values )
     return data
     },
 

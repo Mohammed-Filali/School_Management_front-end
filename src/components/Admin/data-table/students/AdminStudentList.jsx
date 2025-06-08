@@ -28,11 +28,14 @@ import moment from "moment";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AdminApi } from "../../../../service/api/student/admins/adminApi";
+import { deleteStudents_count } from "../../../../redux/admin/adminCountsList";
+import { useDispatch } from "react-redux";
 
 export default function AdminStudentList({ classe_id }) {
   const [data, setData] = useState([]);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -49,7 +52,7 @@ export default function AdminStudentList({ classe_id }) {
     };
 
     fetchStudents();
-  }, []);
+  }, [selectedStudent]);
 
   useEffect(() => {
     if (classe_id) {
@@ -59,26 +62,35 @@ export default function AdminStudentList({ classe_id }) {
       setStudents(data);
     }
   }, [data, classe_id]);
-
+  const dispatch = useDispatch();
   const handleDelete = async (id, name) => {
     try {
-      const deletingLoader = toast.loading(`Deleting ${name}...`);
-      const { status, data: response } = await AdminApi.deleteStudent(id);
-
-      if (status === 200) {
+      const response = await AdminApi.deleteStudent(id);
         setData(data.filter(student => student.id !== id));
+        dispatch(deleteStudents_count());
         toast.success(`Student ${name} deleted successfully`, {
-          description: `Student ${response.data.firstname} ${response.data.lastname} removed`,
+          description: `Student ${response.data.name} removed`,
           icon: <Trash2 className="h-5 w-5" />
         });
-      }
+      
     } catch (error) {
       console.error("Error deleting student:", error);
       toast.error("Failed to delete student");
-    } finally {
-      toast.dismiss(deletingLoader);
-    }
+    } 
   };
+const handleUpdate = async (values, id) => {  
+  try {
+    const res = await AdminApi.updateStudent(id, values);
+    setSelectedStudent( res.student);
+    
+    
+
+    toast.success("Student updated successfully");
+  } catch (error) {
+    console.error("Update failed:", error);
+    toast.error("Failed to update student");
+  }
+};
 
   const studentColumns = [
     {
@@ -189,17 +201,11 @@ export default function AdminStudentList({ classe_id }) {
                     </SheetDescription>
                   </SheetHeader>
                   <div className="py-4">
-                    <StudentUpsertForm
-                      values={student}
-                      handleSubmit={(values) => 
-                        AdminApi.updateStudent(id, values).then((response) => {
-                          setData(data.map(s => 
-                            s.id === id ? response.data.student : s
-                          ));
-                          toast.success("Student updated successfully");
-                        })
-                      }
+                   <StudentUpsertForm
+                    values={student}
+                     handleSubmit={(values) => handleUpdate(values, id)}
                     />
+
                   </div>
                 </SheetContent>
               </Sheet>

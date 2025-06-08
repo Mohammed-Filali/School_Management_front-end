@@ -33,7 +33,6 @@ export const AdminApi = {
     },
 
     updateStudent: async (id,values)=>{
-        console.log(values);
 
         const {data} = await AxiosClient.patch(`/api/admin/students/${id}`,values);
         return data

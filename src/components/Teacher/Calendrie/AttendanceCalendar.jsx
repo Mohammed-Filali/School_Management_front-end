@@ -144,16 +144,18 @@ const TeacherAbsentStudentsPage = () => {
           closable
           onClose={() => setError(null)}
           style={{ marginBottom: 16 }}
+          className='dark:bg-gray-900 dark:text-white'
         />
         <Space>
           <Button 
             type="primary" 
             onClick={extractDataFromUser}
             icon={<RefreshCw size={16} />}
+            className='dark:bg-gray-900 dark:text-white'
           >
             Retry
           </Button>
-          <Button onClick={() => setError(null)}>Dismiss</Button>
+          <Button onClick={() => setError(null)} className='dark:bg-gray-900 dark:text-white'>Dismiss</Button>
         </Space>
       </div>
     );
@@ -162,12 +164,13 @@ const TeacherAbsentStudentsPage = () => {
   return (
     <div className="p-4">
       <Card
+      className='dark:bg-gray-900 dark:text-white'
         title={
-          <Space direction="vertical" size="small">
-            <Title level={5} style={{ margin: 0 }}>
+          <Space direction="vertical" size="small" className='dark:bg-gray-900 dark:text-white'>
+            <Title level={5} style={{ margin: 0 }} className='dark:text-white'>
               Absent Students
             </Title>
-            <Text type="secondary">
+            <Text type="secondary" className='dark:text-white'>
               {selectedDate.format('MMMM D, YYYY')}
             </Text>
           </Space>
@@ -188,8 +191,10 @@ const TeacherAbsentStudentsPage = () => {
           direction={screens.md ? 'horizontal' : 'vertical'} 
           size="middle" 
           style={{ marginBottom: 16, width: '100%' }}
+          className='dark:bg-gray-900 dark:text-white'
         >
           <Select
+          className='dark:bg-gray-900 dark:text-white'
             placeholder="Select Class"
             showSearch
             optionFilterProp="children"
@@ -213,11 +218,13 @@ const TeacherAbsentStudentsPage = () => {
             allowClear={false}
             disabledDate={(current) => current && current > moment().endOf('day')}
             style={{ width: screens.md ? 200 : '100%' }}
+            className='dark:bg-gray-900 dark:text-white'
           />
         </Space>
 
-        <Spin spinning={loading}>
-          <Table
+        <Spin spinning={loading} className='dark:bg-gray-900 dark:text-white'>
+          <Table 
+            className='dark:bg-gray-900 dark:text-white'
             columns={columns}
             dataSource={filteredData}
             rowKey={(record) => record.id}
@@ -236,11 +243,12 @@ const TeacherAbsentStudentsPage = () => {
           />
         </Spin>
 
-        <Space style={{ marginTop: 16, float: 'right' }}>
+        <Space style={{ marginTop: 16, float: 'right' }} className='dark:bg-gray-900 dark:text-white'>
           <Button 
             icon={<Printer size={16} />} 
             onClick={() => window.print()}
             size={screens.md ? 'middle' : 'small'}
+            className='dark:bg-gray-900 dark:text-white'
           >
             {screens.md ? 'Print Report' : ''}
           </Button>
@@ -248,6 +256,7 @@ const TeacherAbsentStudentsPage = () => {
             type="primary" 
             icon={<Download size={16} />}
             size={screens.md ? 'middle' : 'small'}
+            className='dark:bg-gray-900 dark:text-white'
           >
             {screens.md ? 'Export' : ''}
           </Button>

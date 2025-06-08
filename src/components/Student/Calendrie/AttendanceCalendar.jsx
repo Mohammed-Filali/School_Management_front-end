@@ -141,10 +141,10 @@ const StudentAttendancePage = () => {
     <div className="attendance-container">
       <Row gutter={[16, 16]} justify="space-between" align="middle">
         <Col xs={24} md={12}>
-          <Title level={3} className="attendance-title">
+          <Title level={3} className="attendance-title dark:text-gray-100">
             My Attendance Records
           </Title>
-          <Text type="secondary">
+          <Text type="secondary" className="dark:text-gray-100">
             View and track your attendance history
           </Text>
         </Col>
@@ -159,12 +159,14 @@ const StudentAttendancePage = () => {
               suffixIcon={<Calendar />}
               style={{ width: 200 }}
               size="large"
+              className='dark:bg-gray-900 dark:text-gray-100'
             />
             <Button
               type="default"
               onClick={fetchAttendanceData}
               icon={<RefreshCw />}
               size="large"
+              className='dark:bg-gray-900 dark:text-gray-100'
             >
               Refresh
             </Button>
@@ -174,27 +176,27 @@ const StudentAttendancePage = () => {
 
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
         <Col xs={24} md={8}>
-          <Card className="stat-card">
-            <Text type="secondary">Present</Text>
-            <Title level={2} style={{ margin: '8px 0', color: '#52c41a' }}>
+          <Card className="stat-card dark:bg-gray-900 dark:text-gray-100"> 
+            <Text type="secondary" className='dark:text-gray-100'>Present</Text>
+            <Title level={2} className='dark:text-gray-100' style={{ margin: '8px 0', color: '#52c41a' }}>
               {stats.present}
             </Title>
-            <Badge color="#52c41a" text={`${stats.present} days`} />
+            <Badge color="#52c41a"  text={`${stats.present} days`} />
           </Card>
         </Col>
         <Col xs={24} md={8}>
-          <Card className="stat-card">
-            <Text type="secondary">Absent</Text>
-            <Title level={2} style={{ margin: '8px 0', color: '#f5222d' }}>
+          <Card className="stat-card dark:bg-gray-900 dark:text-gray-100">
+            <Text type="secondary" className='dark:text-gray-100'>Absent</Text>
+            <Title level={2} className='dark:text-gray-100' style={{ margin: '8px 0', color: '#f5222d' }}>
               {stats.absent}
             </Title>
             <Badge color="#f5222d" text={`${stats.absent} days`} />
           </Card>
         </Col>
         <Col xs={24} md={8}>
-          <Card className="stat-card">
-            <Text type="secondary">Late</Text>
-            <Title level={2} style={{ margin: '8px 0', color: '#fa8c16' }}>
+          <Card className="stat-card dark:bg-gray-900 dark:text-gray-100">
+            <Text type="secondary" className='dark:text-gray-100'>Late</Text>
+            <Title level={2} className='dark:text-gray-100' style={{ margin: '8px 0', color: '#fa8c16' }}>
               {stats.late}
             </Title>
             <Badge color="#fa8c16" text={`${stats.late} days`} />
@@ -203,10 +205,10 @@ const StudentAttendancePage = () => {
       </Row>
 
       <Card 
-        className="attendance-card"
+        className="attendance-card dark:bg-gray-900 dark:text-gray-100" 
         style={{ marginTop: 24 }}
         title={
-          <Text strong>
+          <Text strong className='dark:text-gray-100'>
             Records for {selectedDate.format('MMMM YYYY')}
           </Text>
         }
@@ -221,7 +223,8 @@ const StudentAttendancePage = () => {
         }
       >
         <Spin spinning={loading} tip="Loading attendance data...">
-          <Table
+          <Table 
+          className='dark:bg-gray-900 dark:text-gray-100'
             columns={columns}
             dataSource={Array.isArray(attendanceData) ? attendanceData : []}
             rowKey={(record) => record.id || record.user?.id || Math.random()}

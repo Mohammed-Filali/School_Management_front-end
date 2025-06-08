@@ -5,6 +5,8 @@ import axios from 'axios';
 import moment from 'moment';
 import { ClasseApi } from '../../../service/api/student/admins/ClasseApi';
 import { PlusOutlined, UserAddOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
+import { useDispatch } from 'react-redux';
+import { addAttendances_count } from '../../../redux/admin/adminCountsList';
 
 const AttendanceCalendar = () => {
     const [attendanceData, setAttendanceData] = useState({});
@@ -66,6 +68,7 @@ const AttendanceCalendar = () => {
         }
         setIsBulkModalVisible(true);
     };
+  const dispatch = useDispatch();
 
     const handleSubmit = async (values) => {
         try {
@@ -75,6 +78,7 @@ const AttendanceCalendar = () => {
                 status: values.status,
                 notes: values.notes || null
             });
+            dispatch(addAttendances_count());
             message.success('Attendance recorded successfully');
             fetchAttendanceData(selectedDate);
             setIsModalVisible(false);
@@ -132,12 +136,12 @@ const AttendanceCalendar = () => {
     return (
         <div className="p-4 max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-                <h2 className="text-2xl font-bold text-gray-800">Attendance Calendar</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Attendance Calendar</h2>
                 <div className="flex gap-2">
                     <Button 
                         icon={<UserAddOutlined />}
                         onClick={handleBulkAttendance}
-                        className="flex items-center"
+                        className="flex items-center  dark:bg-gray-900 dark:text-white"
                     >
                         {!isMobile && 'Bulk Attendance'}
                     </Button>
@@ -146,14 +150,14 @@ const AttendanceCalendar = () => {
                         icon={<PlusOutlined />}
                         onClick={() => selectedDate ? setIsModalVisible(true) : message.warning('Please select a date first')}
                         disabled={!selectedDate}
-                        className="flex items-center"
+                        className="flex items-center  dark:bg-gray-900 dark:text-white"
                     >
                         {!isMobile && 'Mark Attendance'}
                     </Button>
                 </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="bg-white rounded-lg shadow p-4 dark:bg-gray-900 dark:text-white">
                 <Calendar 
                     onSelect={handleDateSelect}
                     dateCellRender={dateCellRender}
@@ -169,7 +173,7 @@ const AttendanceCalendar = () => {
                 onCancel={() => setIsModalVisible(false)}
                 footer={null}
                 destroyOnClose
-                className="rounded-lg"
+                className="rounded-lg "
                 bodyStyle={{ padding: '24px' }}
             >
                 <Form onFinish={handleSubmit} layout="vertical" className="space-y-4">
@@ -205,25 +209,27 @@ const AttendanceCalendar = () => {
                     </Form.Item>
                    
                     {students.length > 0 && (
-                        <Form.Item 
-                            label={<span className="font-medium">Student</span>}
-                            name="userId" 
-                            rules={[{ required: true, message: 'Please select a student' }]}
-                        >
-                            <Select 
-                                placeholder="Select student" 
-                                showSearch 
+                            <Form.Item
+                              label={<span className="font-medium">Student</span>}
+                              name="userId"
+                              rules={[{ required: true, message: 'Please select at least one student' }]}
+                            >
+                              <Select
+                                placeholder="Select student(s)"
+                                showSearch
                                 optionFilterProp="label"
                                 className="w-full"
-                            >
-                                {students.map(student => (
-                                    <Select.Option key={student.id} value={student.id} label={student.name}>
-                                        {student.name} ({student.classe_id})
-                                    </Select.Option>
+                                mode="multiple" // Enable multi-select
+                              >
+                                {students.map((student) => (
+                                  <Select.Option key={student.id} value={student.id} label={student.name}>
+                                    {student.name} ({student.classe_id})
+                                  </Select.Option>
                                 ))}
-                            </Select>
-                        </Form.Item>
-                    )}
+                              </Select>
+                            </Form.Item>
+                            )}
+
 
                     <Form.Item 
                         label={<span className="font-medium">Status</span>}
@@ -265,7 +271,7 @@ const AttendanceCalendar = () => {
                 width={isMobile ? '95%' : 800}
                 footer={null}
                 destroyOnClose
-                className="rounded-lg"
+                className="rounded-lg bg-gray-900 dark:text-white"
                 bodyStyle={{ padding: '24px' }}
             >
                 <Form onFinish={handleBulkSubmit} layout="vertical" className="space-y-4">
@@ -277,7 +283,7 @@ const AttendanceCalendar = () => {
                         />
                     </Form.Item>
                     
-                    <div className="border rounded-lg overflow-hidden">
+                    <div className="border rounded-lg overflow-hidden bg-gray-900 dark:text-white">
                         <Table 
                             dataSource={students}
                             rowKey="id"

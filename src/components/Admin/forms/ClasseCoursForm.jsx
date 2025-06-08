@@ -58,23 +58,10 @@ export default function ClaseCourForm({ handleSubmit, values, class_id }) {
 
   // Form submission handler
   const onSubmit = async (formValues) => {
-    const loaderMsg = isUpdate ? "Updating in progress..." : "Adding Student...";
-    const loader = toast.loading(loaderMsg);
 
-    try {
-      const response = await handleSubmit(formValues);
-      if (response.status === 200) {
-        toast.success(response.data.message);
-        reset();
-      }
-    } catch (error) {
-      const responseErrors = error.response?.data?.errors || {};
-      Object.entries(responseErrors).forEach(([fieldName, errorMessages]) => {
-        setError(fieldName, { message: errorMessages.join(", ") });
-      });
-    } finally {
-      toast.dismiss(loader);
-    }
+ 
+      await handleSubmit(formValues);
+  
   };
 
   // Render

@@ -26,24 +26,26 @@ import {
 } from "@/components/ui/alert-dialog";
 import TypeUpsertForm from "../../forms/TypeUpsertForm";
 import moment from "moment";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ClaseCourForm from "../../forms/ClasseCoursForm";
 import { ClasseCoursApi } from "../../../../service/api/student/admins/ClasseCoursApi";
-import { Card } from "antd";
+import { Card, Input } from "antd";
 
 export default function AdminTypeList() {
+      const [searchTerm, setSearchTerm] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
-
+  const [coure, setCourse] = useState();
   const fetchTypes = async () => {
-    setLoading(true);
     try {
       const { data: response } = await ClasseApi.types();
       setData(response.data);
+      setLoading(false);
     } catch (err) {
-      setError("Failed to fetch types");
-      toast.error("Failed to load types data");
+      setError("Failed to fetch Filiére");
+      toast.error("Failed to load Filiére data");
     } finally {
       setLoading(false);
     }
@@ -51,38 +53,38 @@ export default function AdminTypeList() {
 
   useEffect(() => {
     fetchTypes();
-  }, []);
+  }, [coure]);
   
-  
+
      
 
-  const handleDelete = async (id, name) => {
-    const deletingLoader = toast.loading(`Deleting ${name}...`);
+  const handleDelete = async (id) => {
     
     try {
-      const { status, message } = await ClasseApi.deleteType(id);
+    await ClasseApi.deleteType(id);
       
-      if (status === 200) {
+     
         setData(data.filter(type => type.id !== id));
-        toast.success(message);
-      } else {
-        toast.error(message || "Failed to delete type");
-      }
+        toast.success("Filiére deleted successfully");
+     
+      
     } catch (err) {
-      toast.error("An error occurred while deleting");
-    } finally {
-      toast.dismiss(deletingLoader);
-    }
+      toast.error( "Failed to delete Filiére");
+
+    } 
   };
 
+   const filteredData = data.filter(cour => 
+    cour.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    cour.desc?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   const handleUpdate = async (values, id) => {
     try {
       await ClasseApi.updateType(values, id);
       await fetchTypes(); // Refresh the list after update
-      toast.success("Type updated successfully");
       return { status: 200, message: "Update successful" };
     } catch (error) {
-      toast.error("Failed to update type");
+      toast.error("Failed to update Filiére");
       throw error;
     }
   };
@@ -115,8 +117,8 @@ export default function AdminTypeList() {
         const description = row.getValue("description");
         return <>{description || "No description"}</>;
       },
-    },
-    {
+        },
+        {
       accessorKey: "image",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Image" />
@@ -129,16 +131,16 @@ export default function AdminTypeList() {
 
         return imageUrl ? (
           <img
-            src={imageUrl}
-            alt="Type"
-            className="w-20 h-20 object-cover rounded-md"
+        src={imageUrl}
+        alt="Type"
+        className="w-20 h-20 object-cover rounded-md"
           />
         ) : (
           <span className="text-muted-foreground">No image</span>
         );
       },
-    },
-    {
+        },
+        {
       accessorKey: "updated_at",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Updated At" />
@@ -146,14 +148,15 @@ export default function AdminTypeList() {
       cell: ({ row }) => (
         <>{moment(row.getValue("updated_at")).format('DD-MM-YYYY')}</>
       ),
-    },
-    {
+        },
+        {
       id: "actions",
       cell: ({ row }) => {
         const classe = row.original;
         const { id, name } = classe;
         
-        return (
+        return <>
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
@@ -161,16 +164,16 @@ export default function AdminTypeList() {
           <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-white shadow-lg rounded-md border border-gray-200">
-              <DropdownMenuLabel className="text-gray-700 font-semibold px-4 py-2">Actions</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-56 bg-white shadow-lg rounded-md border border-gray-200 dark:bg-gray-800 dark:text-white">
+              <DropdownMenuLabel className="text-gray-700 font-semibold px-4 py-2 dark:text-white">Actions</DropdownMenuLabel>
               <DropdownMenuSeparator className="border-t border-gray-200" />
 
               {/* Update Action */}
               <Sheet>
           <SheetTrigger asChild>
             <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
-              <Edit className="h-4 w-4 text-gray-600" />
-              <span className="text-gray-700">Update</span>
+              <Edit className="h-4 w-4 text-gray-600 dark:text-white" />
+              <span className="text-gray-700 dark:text-white">Update</span>
             </DropdownMenuItem>
           </SheetTrigger>
           <SheetContent className="sm:max-w-md">
@@ -193,8 +196,8 @@ export default function AdminTypeList() {
               <Sheet>
           <SheetTrigger asChild>
             <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
-              <Plus className="h-4 w-4 text-gray-600" />
-              <span className="text-gray-700">Add Course</span>
+              <Plus className="h-4 w-4 text-gray-600 dark:text-white" />
+              <span className="text-gray-700 dark:text-white">Add Course</span>
             </DropdownMenuItem>
           </SheetTrigger>
           <SheetContent className="sm:max-w-md">
@@ -206,14 +209,18 @@ export default function AdminTypeList() {
             </SheetHeader>
             <div className="py-4">
               <ClaseCourForm
-                handleSubmit={(values) => 
-            ClasseCoursApi.create(values).then(({ status, message }) => {
-              if (status === 201) {
-                toast.success(message);
-              } else {
-                toast.error(message || "Failed to add course");
-              }
-            })
+                handleSubmit={async (values) =>{ 
+                  try {
+                    await ClasseCoursApi.create(values);
+                    setCourse(values)
+                    toast.success("Course added successfully");
+                  } catch (error) {
+                    toast.error(error.message || "Failed to add course");
+
+                  }
+           }
+             
+              
                 }
                 class_id={id}
               />
@@ -225,8 +232,8 @@ export default function AdminTypeList() {
               <Sheet>
           <SheetTrigger asChild>
             <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
-              <BookOpen className="h-4 w-4 text-gray-600" />
-              <span className="text-gray-700">View Courses</span>
+              <BookOpen className="h-4 w-4 text-gray-600 dark:text-white" />
+              <span className="text-gray-700 dark:text-white">View Courses</span>
             </DropdownMenuItem>
           </SheetTrigger>
           <SheetContent className="sm:max-w-md">
@@ -280,7 +287,6 @@ export default function AdminTypeList() {
 
               <DropdownMenuSeparator />
 
-              {/* Delete Action */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <DropdownMenuItem 
@@ -297,7 +303,7 @@ export default function AdminTypeList() {
                       Delete {name}?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will permanently delete the class and cannot be undone.
+                      This will permanently delete the Filiére and cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -313,7 +319,7 @@ export default function AdminTypeList() {
               </AlertDialog>
             </DropdownMenuContent>
           </DropdownMenu>
-        );
+        </>;
       },
     },
     
@@ -335,5 +341,16 @@ export default function AdminTypeList() {
     );
   }
 
-  return <DataTable columns={columns} data={data} />;
+  return <><div>
+             <Input
+          placeholder="Search courses..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm m-6 dark:bg-gray-800 dark:text-white"
+        />
+          </div>
+          <DataTable columns={columns} data={filteredData} />
+
+          </>
+      ;
 }

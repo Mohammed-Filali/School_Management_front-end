@@ -113,7 +113,6 @@ export default function StudentUpsertForm({ handleSubmit, values }) {
       
     } catch (error) {
       console.error("Error fetching data:", error);
-      toast.error("Failed to load required data");
     } finally {
       setLoadingParents(false);
       setLoadingClasses(false);
@@ -127,37 +126,20 @@ export default function StudentUpsertForm({ handleSubmit, values }) {
   }, []);
 
   const onSubmit = async (formValues) => {
-    const loaderMsg = isUpdate ? "Updating student..." : "Creating student...";
-    const loader = toast.loading(loaderMsg);
-
+ 
     try {
-      const response = await handleSubmit(formValues);
+     await handleSubmit(formValues);
       
-      if (response.status === 200) {
         toast.success(
-          response.data.message || 
+       
           (isUpdate ? "Student updated successfully" : "Student created successfully")
         );
-        if (!isUpdate) {
-          reset();
-        }
-      }
+        
+        
+      
     } catch (error) {
       console.error("Form submission error:", error);
-      
-      if (error.response?.data?.errors) {
-        Object.entries(error.response.data.errors).forEach(([field, messages]) => {
-          form.setError(field, { 
-            type: "manual",
-            message: Array.isArray(messages) ? messages.join(", ") : messages
-          });
-        });
-      } else {
-        toast.error(error.message || "An unexpected error occurred");
-      }
-    } finally {
-      toast.dismiss(loader);
-    }
+    } 
   };
 
   return (

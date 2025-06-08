@@ -5,14 +5,27 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ChevronDown, PlusCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { ExamApi } from '../../../service/api/student/teachers/ExamApi';
+import { TeacherApi } from '../../../service/api/student/teacherApi';
 
 const TeacherTotalRecords = () => {
-  const { user } = UseUserContext();
+  const { user ,setUser} = UseUserContext();
   const [students, setStudents] = useState([]);
   const [filteredClasses, setFilteredClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
   const [loading, setLoading] = useState(false);
+  const fetchUser = async () => {
+    try {
+      const {data} = await TeacherApi.getUser()
+      setUser(data);
+    } catch (error) {
+      console.error("Error fetching user:", error);
 
+    }
+  }
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
   useEffect(() => {
     if (user?.classes) {
       // Extract all classes from the teacher's classes
@@ -45,7 +58,7 @@ const TeacherTotalRecords = () => {
   const handleAddRecord = async (record, avg) => {
     let data = {
       user_id: Number(record.id),
-      total: Number(avg),
+      total: parseFloat(avg).toFixed(2), // Ensure total has exactly 2 decimal places
       course_id: Number(user.course_id)
     };
     try {
@@ -100,50 +113,52 @@ const TeacherTotalRecords = () => {
 
   const expandStudentRecord = (record) => {
     return (
-      <div>
-        <h4>Student Details</h4>
-        <Descriptions bordered column={2}>
-          <Descriptions.Item label="Date of Birth">{record.date_of_birth}</Descriptions.Item>
-          <Descriptions.Item label="Blood Type">{record.blood_Type}</Descriptions.Item>
-          <Descriptions.Item label="Address">{record.adress}</Descriptions.Item>
-          <Descriptions.Item label="Phone">{record.phone}</Descriptions.Item>
-        </Descriptions>
+      <div className="dark:bg-gray-900 dark:text-white p-4 rounded">
+      <h4 className='dark:text-white'>Student Details</h4>
+      <Descriptions bordered column={2} className="dark:bg-gray-900 dark:text-white">
+        <Descriptions.Item label="Date of Birth" className='dark:text-white'>{record.date_of_birth}</Descriptions.Item>
+        <Descriptions.Item label="Blood Type" className='dark:text-white'>{record.blood_Type}</Descriptions.Item>
+        <Descriptions.Item label="Address" className='dark:text-white'>{record.adress}</Descriptions.Item>
+        <Descriptions.Item label="Phone" className='dark:text-white'>{record.phone}</Descriptions.Item>
+      </Descriptions>
 
-        <Divider />
+      <Divider className="dark:bg-gray-700" />
 
-        <h4>Exam Records</h4>
-        {record.records?.length > 0 ? (
-          <Table 
-            columns={[
-              { title: 'Exam', dataIndex: ['exams', 'name'], key: 'exam_name' },
-              { title: 'Type', dataIndex: ['exams', 'type'], key: 'exam_type' },
-              { title: 'Date', 
-                dataIndex: ['exams', 'created_at'], 
-                key: 'exam_date',
-                render: (date) => new Date(date).toLocaleDateString()
-              },
-              { title: 'Score', dataIndex: 'note', key: 'score' },
-              { title: 'Comment', dataIndex: 'comment', key: 'comment' },
-            ]}
-            dataSource={record.records}
-            pagination={false}
-            rowKey="id"
-          />
-        ) : (
-          <p>No exam records found</p>
-        )}
+      <h4 className='dark:text-white'>Exam Records</h4>
+      {record.records?.length > 0 ? (
+        <Table 
+        className='dark:bg-gray-900 dark:text-white'
+        columns={[
+          { title: <span className="dark:text-white">Exam</span>, dataIndex: ['exams', 'name'], key: 'exam_name' },
+          { title: <span className="dark:text-white">Type</span>, dataIndex: ['exams', 'type'], key: 'exam_type' },
+          { 
+          title: <span className="dark:text-white">Date</span>, 
+          dataIndex: ['exams', 'created_at'], 
+          key: 'exam_date',
+          render: (date) => <span className="dark:text-white">{new Date(date).toLocaleDateString()}</span>
+          },
+          { title: <span className="dark:text-white">Score</span>, dataIndex: 'note', key: 'score' },
+          { title: <span className="dark:text-white">Comment</span>, dataIndex: 'comment', key: 'comment' },
+        ]}
+        dataSource={record.records}
+        pagination={false}
+        rowKey="id"
+        />
+      ) : (
+        <p className="dark:text-white">No exam records found</p>
+      )}
       </div>
     );
   };
 
   if (!user) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-10 w-[200px]" />
-        <Skeleton className="h-8 w-[300px]" />
-        <div className="space-y-2">
+      <div className="space-y-4 dark:bg-gray-900 dark:text-white">
+        <Skeleton className="h-10 w-[200px] dark:bg-gray-900 dark:text-white" />
+        <Skeleton className="h-8 w-[300px] dark:bg-gray-900 dark:text-white" />
+        <div className="space-y-2 dark:bg-gray-900 dark:text-white">
           {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
+            <Skeleton key={i} className="h-12 w-full dark:bg-gray-900 dark:text-white" />
           ))}
         </div>
       </div>
@@ -152,23 +167,23 @@ const TeacherTotalRecords = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <Card title="Teacher Information" loading={loading}>
-        <Descriptions>
-          <Descriptions.Item label="Name">{user.firsName} {user.lastName}</Descriptions.Item>
-          <Descriptions.Item label="Email">{user.email}</Descriptions.Item>
-          <Descriptions.Item label="Course">{user.course?.name}</Descriptions.Item>
+      <Card title="Teacher Information" className='dark:bg-gray-900 dark:text-white' loading={loading}>
+        <Descriptions className='dark:bg-gray-900 dark:text-white'>
+          <Descriptions.Item label="Name" className='dark:text-white'>{user.firsName} {user.lastName}</Descriptions.Item>
+          <Descriptions.Item label="Email" className='dark:text-white'>{user.email}</Descriptions.Item>
+          <Descriptions.Item label="Course" className='dark:text-white'>{user.course?.name}</Descriptions.Item>
         </Descriptions>
       </Card>
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-full sm:w-64 justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-4 dark:bg-gray-900 dark:text-white">
+        <DropdownMenu >
+          <DropdownMenuTrigger asChild className='bg-white'>
+            <Button variant="outline" className="w-full sm:w-64 justify-between dark:bg-gray-900 dark:text-white">
               {selectedClass ? selectedClass.name : "Select a Class"}
               <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-64">
+          </DropdownMenuTrigger >
+          <DropdownMenuContent className="w-64 dark:bg-gray-900 dark:text-white">
             {filteredClasses.length > 0 ? (
               filteredClasses.map(classItem => (
                 <DropdownMenuItem
@@ -194,11 +209,12 @@ const TeacherTotalRecords = () => {
       {selectedClass ? (
         <>
           <Divider />
-          <Card title={`${selectedClass.name} Students`} loading={loading}>
+          <Card title={`${selectedClass.name} Students`} loading={loading} className='dark:bg-gray-900 dark:text-white' >
             <Table
               columns={studentColumns}
               dataSource={students}
               rowKey="id"
+              className='dark:bg-gray-900 dark:text-white'
               expandable={{
                 expandedRowRender: expandStudentRecord,
                 rowExpandable: (record) => record.records?.length > 0,
@@ -210,7 +226,7 @@ const TeacherTotalRecords = () => {
           </Card>
         </>
       ) : (
-        <div className="mt-4">
+        <div className="mt-4 dark:bg-gray-900 dark:text-white">
           {filteredClasses.length > 0 
             ? "Please select a class to view students" 
             : "No classes available for your courses"}

@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   TEACHER_Calendar_ROUTE,
   TEACHER_CalendarList_ROUTE,
-  TEACHER_MANAGE_EXAMS_ROUTE,
+  TEACHER_MANAGE_EXAMS_route,
   TEACHER_MANAGE_RECORDS_ROUTE,
   TEACHER_MANAGE_TASKS_ROUTE,
   TEACHER_TOTAL_RECORDS_ROUTE,
@@ -17,12 +17,17 @@ import {
   LayoutDashboard,
   BookOpen,
 } from "lucide-react";
+import { useEffect } from "react";
 
 export function TeacherAdministrationSideBar({ className }) {
-  const location = useLocation();
+    const { pathname } = useLocation();
+    const navigate = useNavigate();
+    useEffect(() => {
+  
+    }, [navigate])
   const routes = [
     {
-      path: TEACHER_MANAGE_EXAMS_ROUTE,
+      path: TEACHER_MANAGE_EXAMS_route,
       name: "Exams",
       icon: <FileText className="mr-2 h-4 w-4" />,
     },
@@ -65,8 +70,9 @@ export function TeacherAdministrationSideBar({ className }) {
             {routes.map((route) => (
               <Link to={route.path} key={route.path}>
                 <Button
+                onClick={() => navigate(route.path)}
                   variant={
-                    location.pathname === route.path ? "secondary" : "ghost"
+                    pathname === route.path ? "secondary" : "ghost"
                   }
                   className="w-full justify-start transition-all hover:bg-accent hover:text-accent-foreground"
                 >

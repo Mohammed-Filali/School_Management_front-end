@@ -9,7 +9,6 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { UseUserContext } from "../../../context/StudentContext";
 
 export default function ManageParents() {
-  const { user } = UseUserContext();
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   return (

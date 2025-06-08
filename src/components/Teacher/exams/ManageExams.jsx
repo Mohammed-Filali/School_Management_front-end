@@ -1,13 +1,44 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import ExamUpsertForm from "./ExamUpsertForm";
 import { ExamApi } from "../../../service/api/student/teachers/ExamApi";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import TeacherExamsList from "./TeacherExamsliste";
 import { Separator } from "@radix-ui/react-dropdown-menu";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useDispatch, useSelector } from "react-redux";
+import { addExam } from "../../../redux/Teacher/ExamsSlice";
 
 export default function ManageExams() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const exams = useSelector((state) => state.TeacherExams.exams); 
+// Get exams from Redux
+  const dispatch = useDispatch(); // Assuming you have set up Redux and useDispatch
+  // assuming you have a state for exams
+    
+    
+  const handleCreateExam = async (values) => {
+    try {
+      setIsSubmitting(true);
+      const response = await ExamApi.create(values);
+      
+      if (response.status === 200) {
+        dispatch(addExam( response.data.Exame));
+        console.log("Exam created successfully:", response.data.Exame);
+        
+        toast.success("Exam created successfully");
+        
+      }
+    } catch (error) {
+      console.error("Error creating exam:", error);
+      toast.error(error.response?.data?.message || "Failed to create exam");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="w-full">
       <Card className="border-none shadow-none">
@@ -31,9 +62,11 @@ export default function ManageExams() {
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">All Exams</h3>
                 <Separator />
-                <ScrollArea className="h-[calc(100vh-220px)]">
-                  <TeacherExamsList />
-                </ScrollArea>
+                <Card>
+                  <CardContent className="pt-6">
+                    <TeacherExamsList  exams={exams}  />
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
 
@@ -44,7 +77,12 @@ export default function ManageExams() {
                 <Card>
                   <CardContent className="pt-6">
                     <ExamUpsertForm 
-                      handleSubmit={(values) => ExamApi.create(values)} 
+                      handleSubmit={handleCreateExam}
+                      isSubmitting={isSubmitting}
+                      onSuccess={() => {
+                        // Optional: auto-switch tabs after creation
+                        document.querySelector('[value="exams_list"]').click();
+                      }}
                     />
                   </CardContent>
                 </Card>

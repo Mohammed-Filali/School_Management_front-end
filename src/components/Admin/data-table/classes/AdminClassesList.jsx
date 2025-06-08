@@ -30,56 +30,58 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Loader2, MoreVertical, Trash2, Edit, BookOpen, Plus } from "lucide-react";
+import { Loader2, MoreVertical, Trash2, Edit,  } from "lucide-react";
 import ClasseUpsertForm from "../../forms/ClasseUpsertForm";
 import moment from "moment";
 import { Badge } from "@/components/ui/badge";
 import { ClasseApi } from "../../../../service/api/student/admins/ClasseApi";
+import { Input } from "antd";
+import { useDispatch } from "react-redux";
+import { deleteClasses_count } from "../../../../redux/admin/adminCountsList";
 
 export default function AdminClasseList() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
+       const [searchTerm, setSearchTerm] = useState("");
  
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [classesResponse, coursResponse, typesResponse] = await Promise.all([
+        const [classesResponse,] = await Promise.all([
           ClasseApi.all(),
       
         ]);
 
         setData(classesResponse.data.data);
-
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("Failed to load data");
-      } finally {
-        setLoading(false);
-      }
+      } 
     };
 
     fetchData();
   }, []);
+  const dispatch = useDispatch();
 
   const handleDelete = async (id, name) => {
     try {
-      const deletingLoader = toast.loading(`Deleting ${name}...`);
-      const { status, message } = await ClasseApi.delete(id);
-
-      if (status === 201) {
+          await ClasseApi.delete(id);
+        dispatch(deleteClasses_count());
+     
         setData(data.filter(classe => classe.id !== id));
         toast.success(`Class "${name}" deleted successfully`);
-      } else {
-        toast.error(message || "Failed to delete class");
-      }
+     
     } catch (error) {
       toast.error("An error occurred while deleting");
       console.error(error);
-    } finally {
-      toast.dismiss(deletingLoader);
-    }
+    } 
   };
+   const filteredData = data.filter(cour => 
+    cour.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    cour.desc?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const AdminClassesColumns = [
     {
@@ -171,7 +173,6 @@ export default function AdminClasseList() {
                           setData(data.map(c => 
                             c.id === id ? { ...c, ...values } : c
                           ));
-                          toast.success("Class updated successfully");
                         });
                       }}
                       values={classe}
@@ -230,13 +231,15 @@ export default function AdminClasseList() {
     );
   }
 
-  return (
-    <div className="space-y-4">
-      <DataTable 
-        columns={AdminClassesColumns} 
-        data={data} 
-        emptyMessage="No classes found"
-      />
-    </div>
-  );
+  return <><div>
+             <Input
+          placeholder="Search courses..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm m-6 dark:bg-gray-800 text-white"
+        />
+          </div>
+          <DataTable columns={AdminClassesColumns} data={filteredData} />
+
+          </>
 }

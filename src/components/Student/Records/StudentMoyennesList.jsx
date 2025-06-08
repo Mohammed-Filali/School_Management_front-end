@@ -12,8 +12,11 @@ export default function StudentMoyennesList() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (user  && user.moyennes) {
     setData(user?.moyennes)
-    
+          setLoading(false);
+
+    }
   }, []);
 
 

@@ -45,34 +45,13 @@ export default function CourUpsertForm({ handleSubmit, values }) {
   const isUpdate = values !== undefined;
 
   const onSubmit = async (formValues) => {
-    const loaderMsg = isUpdate ? "Updating course..." : "Creating course...";
-    const loader = toast.loading(loaderMsg);
+   
 
-    try {
-      const result = await handleSubmit(formValues);
+    
+      await handleSubmit(formValues);
       
-      if (result?.status === 201) {
-        toast.success(result.message || (isUpdate ? "Course updated successfully" : "Course created successfully"));
-        if (!isUpdate) {
-          reset(); // Only reset form for create operations
-        }
-      }
-    } catch (error) {
-      console.error("Form submission error:", error);
+        
       
-      if (error.response?.data?.errors) {
-        Object.entries(error.response.data.errors).forEach(([field, message]) => {
-          form.setError(field, { 
-            type: "manual",
-            message: Array.isArray(message) ? message.join(", ") : message
-          });
-        });
-      } else {
-        toast.error(error.message || "An unexpected error occurred");
-      }
-    } finally {
-      toast.dismiss(loader);
-    }
   };
 
   return (

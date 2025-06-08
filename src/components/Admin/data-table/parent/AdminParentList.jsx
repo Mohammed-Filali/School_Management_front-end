@@ -28,31 +28,46 @@ import { Loader2, Trash2, Edit, MoreHorizontal } from "lucide-react";
 import moment from "moment";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AxiosClient } from "../../../../api/axios";
 
 export default function AdminParentList() {
-  const [data, setData] = useState([]);
+   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [meta, setMeta] = useState();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+
+
+
+
+
+
+  const fetchParents = async (page = currentPage, per_page = perPage) => {
+  try {
+    setLoading(true);
+    const { data: parents, meta: parentMeta } =  await ParentApi.all({
+      page,
+      per_page,
+    });
+    console.log(parents);
+    
+    setData(parents || []);
+    setMeta(parentMeta);
+  } catch (error) {
+    console.error("Error fetching parents:", error);
+    toast.error("Failed to load parent data");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
-    const fetchParents = async () => {
-      try {
-        setLoading(true);
-        const { data: parents } = await ParentApi.all();
-        setData(parents || []);
-      } catch (error) {
-        console.error("Error fetching parents:", error);
-        toast.error("Failed to load parent data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchParents();
-  }, []);
+  }, [currentPage, perPage]);
 
   const handleDelete = async (id, firstName, lastName) => {
     try {
-      const deletingLoader = toast.loading(`Deleting ${firstName} ${lastName}...`);
       const { status, message } = await ParentApi.delete(id);
 
       if (status === 201) {
@@ -64,9 +79,7 @@ export default function AdminParentList() {
     } catch (error) {
       console.error("Error deleting parent:", error);
       toast.error("An error occurred while deleting");
-    } finally {
-      toast.dismiss(deletingLoader);
-    }
+    } 
   };
 
   const AdminParentColumns = [
@@ -248,11 +261,14 @@ export default function AdminParentList() {
 
   return (
     <div className="space-y-4">
-      <DataTable 
-        columns={AdminParentColumns} 
-        data={data || []} 
-        emptyMessage="No parents found"
-      />
-    </div>
+    <DataTable
+      data={data}
+      columns={AdminParentColumns}
+       meta={meta}
+       isLoading={loading}
+       onPageChange={(page) => setCurrentPage(page)}
+       onPageSizeChange={(size) => setPerPage(size)}
+     />
+   </div>
   );
 }

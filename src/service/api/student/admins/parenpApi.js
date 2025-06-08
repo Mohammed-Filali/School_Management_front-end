@@ -13,9 +13,9 @@ export const ParentApi = {
         const {data} = await AxiosClient.post("/api/admin/parents", values )
     return data
     },
-    all : async ()=>{
-        const {data} = await AxiosClient.get("/api/admin/parents" )
-    return data
+    all : async ({page, per_page})=>{
+        const {data} = await AxiosClient.get(`/api/admin/parents?page=${page}&per_page=${per_page}`);
+        return data
     },
     logout : async ()=>{
         return await AxiosClient.post("/logout" )

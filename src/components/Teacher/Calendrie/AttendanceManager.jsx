@@ -27,15 +27,19 @@ const TeacherAttendanceCalendar = () => {
     const { user } = UseUserContext();
 
     // Extract classes from the user data structure
-    const classes = user?.classes?.flatMap(teacherClass => 
-        teacherClass.class_type.classe.map(classe => ({
+    const classes = user?.classes?.flatMap(teacherClass => {
+        if (teacherClass.class_type && Array.isArray(teacherClass.class_type.classe)) {
+          return teacherClass.class_type.classe.map(classe => ({
             id: classe.id,
             name: classe.name,
             students: classe.students || [],
             class_type_name: teacherClass.class_type.name,
             course_name: user.course.name
-        }))
-    ) || [];
+          }));
+        }
+        return [];
+      }) || [];
+      
 
     useEffect(() => {
         fetchAttendanceData();
@@ -132,9 +136,9 @@ const TeacherAttendanceCalendar = () => {
     };
 
     return (
-        <div className="p-4">
-            <div className="flex justify-between mb-4">
-                <h2 className="text-xl font-bold flex items-center gap-2">
+        <div className="p-4 dark:bg-gray-900 dark:text-white">
+            <div className="flex justify-between mb-4 dark:bg-gray-900 dark:text-white">
+                <h2 className="text-xl font-bold flex items-center gap-2 dark:text-white">
                     <CalendarIcon className="h-5 w-5" />
                     Attendance Calendar
                 </h2>
@@ -142,6 +146,7 @@ const TeacherAttendanceCalendar = () => {
                     <Button 
                         icon={<Users className="h-4 w-4" />} 
                         onClick={handleBulkAttendance}
+                        className='dark:bg-gray-900 dark:text-white'
                     >
                         Bulk Attendance
                     </Button>
@@ -150,6 +155,7 @@ const TeacherAttendanceCalendar = () => {
                         icon={<UserPlus className="h-4 w-4" />}
                         onClick={() => selectedDate ? setIsModalVisible(true) : message.warning('Please select a date first')}
                         disabled={!selectedDate}
+                        className='dark:bg-gray-900 dark:text-white'
                     >
                         Mark Attendance
                     </Button>
@@ -160,12 +166,13 @@ const TeacherAttendanceCalendar = () => {
                 onSelect={handleDateSelect}
                 dateCellRender={dateCellRender}
                 loading={loading}
+                className='dark:bg-gray-900 dark:text-white'
             />
 
             {/* Single Attendance Modal */}
             <Modal
                 title={
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 ">
                         <UserPlus className="h-5 w-5" />
                         <span>Mark Attendance</span>
                     </div>
@@ -215,28 +222,27 @@ const TeacherAttendanceCalendar = () => {
                     </Form.Item>
                     
                     {students.length > 0 && (
-                        <Form.Item 
-                            label="Student" 
-                            name="userId" 
-                            rules={[{ required: true, message: 'Please select a student' }]}
-                        >
-                            <Select 
-                                placeholder="Select student" 
-                                showSearch 
-                                optionFilterProp="label"
-                                suffixIcon={<Search className="h-4 w-4 opacity-50" />}
-                                filterOption={(input, option) =>
-                                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                                }
+                            <Form.Item
+                              label={<span className="font-medium">Student</span>}
+                              name="userId"
+                              rules={[{ required: true, message: 'Please select at least one student' }]}
                             >
-                                {students.map(student => (
-                                    <Select.Option key={student.id} value={student.id} label={student.name}>
-                                        {student.name} ({student.email})
-                                    </Select.Option>
+                              <Select
+                                placeholder="Select student(s)"
+                                showSearch
+                                optionFilterProp="label"
+                                className="w-full"
+                                mode="multiple" // Enable multi-select
+                              >
+                                {students.map((student) => (
+                                  <Select.Option key={student.id} value={student.id} label={student.name}>
+                                    {student.name} ({student.classe_id})
+                                  </Select.Option>
                                 ))}
-                            </Select>
-                        </Form.Item>
-                    )}
+                              </Select>
+                            </Form.Item>
+                            )}
+
 
                     <Form.Item 
                         label="Status" 
@@ -290,7 +296,7 @@ const TeacherAttendanceCalendar = () => {
             {/* Bulk Attendance Modal */}
             <Modal
                 title={
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2" >
                         <Users className="h-5 w-5" />
                         <span>Bulk Attendance</span>
                     </div>

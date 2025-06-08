@@ -4,14 +4,11 @@ import {
   MdKeyboardArrowUp,
   MdKeyboardDoubleArrowUp,
 } from "react-icons/md";
-import { ClipboardEdit, Loader2, BookOpen, Calendar, FileText } from "lucide-react";
-import { FaChalkboardTeacher, FaNewspaper, FaTasks, FaUserFriends, FaUsers } from "react-icons/fa";
-import { FaArrowsToDot } from "react-icons/fa6";
+import { ClipboardEdit, Loader2, BookOpen } from "lucide-react";
+import { FaChalkboardTeacher, FaUserFriends, FaUsers } from "react-icons/fa";
 import moment from "moment";
 import clsx from "clsx";
-import { PRIOTITYSTYELS, TASK_TYPE } from "../../utils/index";
-import { BarChartComponent, PieChartComponent } from "../Chart";
-import { useDispatch, useSelector } from "react-redux";
+import { PRIOTITYSTYELS, TASK_TYPE } from "../../utils/index";import { useDispatch, useSelector } from "react-redux";
 import { setTasks, setGraphData, setLast10Task } from '../../redux/TasksSlice';
 import { useEffect, useState } from "react";
 import { TasksApi } from "../../service/api/student/tasksApi";
@@ -22,6 +19,7 @@ import { toast } from "sonner";
 import { TeacherApi } from "../../service/api/student/teacherApi";
 import { Link } from "react-router-dom";
 import { ADMIN_MANAGE_STUDENTS_ROUTE, ADMIN_MANAGE_TASKS_ROUTE, ADMIN_MANAGE_TEACHERS_ROUTE } from "../../router";
+import { setAttendances_count, setClasses_count, setStudents_count, setTeachers_count } from "../../redux/admin/adminCountsList";
 
 const TaskTable = ({ tasks }) => {
   const ICONS = {
@@ -164,13 +162,26 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
 const [mockTeachers, setMockTeachers] = useState([]);
   const [mockStudents, setMockStudents] = useState([]);
-
+  const teachersCount = useSelector((state) => state.AdminCountsList.teachers_count || 0);
+const studentsCount = useSelector((state) => state.AdminCountsList.students_count || 0);
+const classesCount = useSelector((state) => state.AdminCountsList.classes_count || 0);
+const attendancesCount = useSelector((state) => state.AdminCountsList.attendances_count || 0);
+useEffect(() => {
+  if (user) {
+    if(teachersCount === 0 || studentsCount === 0 || classesCount === 0 || attendancesCount === 0) {
+      dispatch(setTeachers_count(user.teachers_count));
+      dispatch(setStudents_count(user.students_count));
+      dispatch(setClasses_count(user.classes_count));
+      dispatch(setAttendances_count(user.attendances_count));
+    }
+  }
+}, [user, dispatch]); // ✅ exécuter uniquement si `user` change
 
   const stats = [
     {
       _id: "1",
       label: "TOTAL Students",
-      total: user?.students_count || 142,
+      total: studentsCount || 142,
       icon: <FaUsers className="text-lg" />,
       bg: "bg-blue-500",
       change: 5.6
@@ -178,7 +189,7 @@ const [mockTeachers, setMockTeachers] = useState([]);
     {
       _id: "2",
       label: "Active Teachers",
-      total: user?.teachers_count || 24,
+      total: teachersCount || 24,
       icon: <FaChalkboardTeacher className="text-lg" />,
       bg: "bg-amber-500",
       change: 2.3
@@ -186,7 +197,7 @@ const [mockTeachers, setMockTeachers] = useState([]);
     {
       _id: "3",
       label: "Classes",
-      total: user?.classes_count||3,
+      total: classesCount||3,
       icon: <BookOpen className="text-lg" />,
       bg: "bg-indigo-500",
       change: 1.8
@@ -194,7 +205,7 @@ const [mockTeachers, setMockTeachers] = useState([]);
     {
       _id: "4",
       label: "Avg. Attendance",
-      total: user?.attendances_count || 5,
+      total: attendancesCount || 5,
       icon: <FaUserFriends className="text-lg" />,
       bg: "bg-green-500",
       change: 1.2
@@ -231,7 +242,7 @@ const [mockTeachers, setMockTeachers] = useState([]);
       try {
         const Students  = await AdminApi.allsStudents();
         setMockStudents(Students.data);
-        const  {data}  = await TeacherApi.all();
+        const  {data}  = await TeacherApi.all({page: 1, per_page: 10});
         setMockTeachers(data.data);
 
       } catch (error) {

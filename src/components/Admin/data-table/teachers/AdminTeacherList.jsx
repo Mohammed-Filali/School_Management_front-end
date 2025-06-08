@@ -26,45 +26,49 @@ import { TeacherApi } from "../../../../service/api/student/teacherApi";
 import TeacherUpsertForm from "../../forms/TeacherUpsertForm";
 import { Loader2 } from "lucide-react";
 import moment from "moment";
+import { useDispatch } from "react-redux";
+import { deleteTeachers_count } from "../../../../redux/admin/adminCountsList";
 
 export default function AdminTeacherList() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+  const [meta, setMeta] = useState();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+const fetchTeachers = async (page = currentPage, per_page = perPage) => {
+  try {
+    setLoading(true);
+    const { data: teachers} =  await TeacherApi.all({
+      page,
+      per_page,
+    });
+    setData(teachers.data || []);
+    setMeta(teachers.meta);
+  } catch (error) {
+    toast.error("Failed to load teachers data");
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-        const { data: response } = await TeacherApi.all();
-        setData(response.data);
-      } catch (err) {
-        setError("Failed to load teachers");
-        toast.error("Failed to load teachers data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchTeachers();
-  }, []);
+  }, [currentPage, perPage]);
+  const dispatch = useDispatch();
 
   const handleDelete = async (id, firstName, lastName) => {
-    const deletingLoader = toast.loading(`Deleting ${firstName} ${lastName}...`);
-    
+
     try {
       const { status, message } = await TeacherApi.delete(id);
-      
+      dispatch(deleteTeachers_count());
       if (status === 201) {
         setData(data.filter(teacher => teacher.id !== id));
-        toast.success(message);
+        toast.success("Teacher deleted successfully");
       } else {
-        toast.error(message || "Failed to delete teacher");
+        toast.error("Failed to delete teacher");
       }
     } catch (err) {
       toast.error("An error occurred while deleting");
-    } finally {
-      toast.dismiss(deletingLoader);
-    }
+    } 
   };
 
   const handleUpdate = async (values, id) => {
@@ -221,13 +225,20 @@ export default function AdminTeacherList() {
     );
   }
 
-  if (error) {
+  if (data.length === 0) {
     return (
-      <div className="w-full h-64 flex items-center justify-center text-red-500">
-        {error}
+      <div className="w-full h-64 flex items-center justify-center">
+        <p className="text-gray-500">No teachers found</p>
       </div>
     );
   }
 
-  return <DataTable columns={columns} data={data} />;
+  return <DataTable
+      data={data}
+      columns={columns}
+       meta={meta}
+       isLoading={loading}
+       onPageChange={(page) => setCurrentPage(page)}
+       onPageSizeChange={(size) => setPerPage(size)}
+     />;
 }

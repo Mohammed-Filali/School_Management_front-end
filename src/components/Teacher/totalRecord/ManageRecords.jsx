@@ -20,7 +20,6 @@ export default function ManageRecords() {
   const { user } = UseUserContext();
   const [filteredClasses, setFilteredClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (user?.classes) {

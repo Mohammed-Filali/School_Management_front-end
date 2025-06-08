@@ -16,8 +16,8 @@ export const TeacherApi = {
     getUser: async () => {
         return await AxiosClient.get('/api/me')
       },
-      all: async () => {
-        return await AxiosClient.get('/api/admin/teachers')
+      all: async ({ page, per_page }) => {
+        return await AxiosClient.get(`/api/admin/teachers?page=${page}&per_page=${per_page}`);
       },
       update: async (values,id)=>{
 
@@ -40,7 +40,7 @@ export const TeacherApi = {
         return await AxiosClient.get('api/teacher/cours')
       },
       update_Password : async (values)=>{
-        const {data} = await AxiosClient.post("/api/student/update-password", values )
+        const {data} = await AxiosClient.post("/api/teacher/update-password", values )
     return data
     },
 }

@@ -77,40 +77,20 @@ export default function ClasseUpsertForm({ handleSubmit, values }) {
   }, []);
 
   const onSubmit = async (formValues) => {
-    const loaderMsg = isUpdate ? "Updating class..." : "Creating class...";
-    const loader = toast.loading(loaderMsg);
 
     try {
-      const result = await handleSubmit({
+      await handleSubmit({
         ...formValues,
         class_type_id: parseInt(formValues.class_type_id),
       });
 
-      if (result?.status === 201) {
-        toast.success(
-          result.message || 
-          (isUpdate ? "Class updated successfully" : "Class created successfully")
-        );
-        if (!isUpdate) {
-          reset(); // Only reset form for create operations
-        }
-      }
+      toast.success((isUpdate ? "Class updated successfully" : "Class created successfully"));
+
     } catch (error) {
-      console.error("Form submission error:", error);
+      console.error('submit error:', error);
       
-      if (error.response?.data?.errors) {
-        Object.entries(error.response.data.errors).forEach(([field, messages]) => {
-          form.setError(field, { 
-            type: "manual",
-            message: Array.isArray(messages) ? messages.join(", ") : messages
-          });
-        });
-      } else {
-        toast.error(error.message || "An unexpected error occurred");
-      }
-    } finally {
-      toast.dismiss(loader);
-    }
+      
+    } 
   };
 
   return (

@@ -78,7 +78,7 @@ export const ADMIN_CalendarList_ROUTE =ADMIN_BASE_ROUTE+'/calendar-list'
 
 
 const TEACHER_BASE_ROUTE = '/teacher'
-export const TEACHER_MANAGE_EXAMS_ROUTE =TEACHER_BASE_ROUTE+'/manage-exams'
+export const TEACHER_MANAGE_EXAMS_route =TEACHER_BASE_ROUTE+'/manage-exams'
 export const TEACHER_MANAGE_RECORDS_ROUTE =TEACHER_BASE_ROUTE+'/manage-records'
 export const TEACHER_DASHBOARD_ROUTE = '/teacher/dashboard'
 export const TEACHER_PROFILE_ROUTE = '/teacher/profile'
@@ -335,7 +335,7 @@ export const  Router = createBrowserRouter([
           },
 
           {
-            path: TEACHER_MANAGE_EXAMS_ROUTE,
+            path: TEACHER_MANAGE_EXAMS_route,
            element: <ManageExams />,
 
           },

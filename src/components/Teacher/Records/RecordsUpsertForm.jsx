@@ -25,6 +25,7 @@ import { ExamApi } from "../../../service/api/student/teachers/ExamApi";
 import { UseUserContext } from "../../../context/StudentContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { useSelector } from "react-redux";
 
 const formSchema = z.object({
   note: z.number().min(0).max(20),
@@ -33,8 +34,8 @@ const formSchema = z.object({
   exam_id: z.number({ required_error: "Exam is required" }),
 });
 
-export default function RecordsUpsertForm({ user_id }) {
-  const [exams, setExams] = useState([]);
+export default function RecordsUpsertForm({ user_id , classe_id }) {
+    const exams = useSelector((state) => state.TeacherExams.exams); // Get exams from Redux
   const [filteredExams, setFilteredExams] = useState([]);
   const { user } = UseUserContext();
 
@@ -48,27 +49,18 @@ export default function RecordsUpsertForm({ user_id }) {
     }
   });
 
-  useEffect(() => {
-    if (user) {
-      // Extract exams from the user object - adjust this path based on your actual data structure
-      const userExams = user.exams || 
-                        user.teacher?.exams || 
-                        user.teacher_exams || 
-                        [];
-      setExams(userExams);
-    }
-  }, [user]);
+  
 
   useEffect(() => {
     if (exams.length > 0 && user) {
       // Filter exams by teacher_id if needed
       const matchedExams = exams.filter((exam) => 
-        exam.teacher_id === user.id || 
-        exam.teacher?.id === user.id
+        exam.classe_id === classe_id
       );
       setFilteredExams(matchedExams);
     }
-  }, [exams, user]);
+    
+  }, [exams, user,classe_id]);
 
   const {
     handleSubmit,

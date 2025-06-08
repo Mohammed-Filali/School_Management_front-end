@@ -187,6 +187,7 @@ export default function TeacherRecordsList({ id }) {
             </SheetDescription>
           </SheetHeader>
           <RecordsUpsertForm 
+          classe_id={selectedStudent?.classe_id}
             user_id={selectedStudent?.id}
             handleSubmit={handleSubmitRecord}
             onSuccess={() => setSheetOpen(false)}

@@ -28,14 +28,7 @@ export default function AdminProfile() {
           <CardHeader className="pb-4">
             <div className="flex flex-col items-center space-y-4">
               <Avatar.Root className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
-                <Avatar.Image
-                  className="w-full h-full object-cover"
-                  src={
-                    user.profileImage ||
-                    "https://via.placeholder.com/150"
-                  }
-                  alt={`${user.firsName} ${user.lastName}`}
-                />
+               
                 <Avatar.Fallback className="w-full h-full flex items-center justify-center bg-indigo-100 text-indigo-800 text-4xl font-bold">
                   {user.firsName?.charAt(0).toUpperCase()}
                 </Avatar.Fallback>

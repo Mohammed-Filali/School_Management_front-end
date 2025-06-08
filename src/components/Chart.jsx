@@ -90,7 +90,7 @@ const renderActiveShape = (props) => {
   );
 };
 
-export const BarChartComponent = ({ data, xKey = 'name', yKey = 'value', colors = COLORS, horizontal = false, title = '' }) => {
+export const BarChartComponent = ({ data, xKey = 'priority', yKey = 'count', colors = COLORS, horizontal = false, title = '' }) => {
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">

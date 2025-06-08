@@ -54,26 +54,19 @@ export default function AdminCourList() {
 
   const handleDelete = async (id, name) => {
     try {
-      const deletingLoader = toast.loading(`Deleting ${name}...`);
-      const { status, message } = await CourApi.delete(id);
+      await CourApi.delete(id);
       
-      if (status === 201) {
         setData(data.filter((cour) => cour.id !== id));
         toast.success(`Course "${name}" deleted successfully`);
-      } else {
-        toast.error(message || "Failed to delete course");
-      }
+      
     } catch (error) {
       toast.error("An error occurred while deleting");
       console.error(error);
-    } finally {
-      toast.dismiss(deletingLoader);
-    }
+    } 
   };
 
   const handleUpdate = async (values, id) => {
     try {
-      const updatingLoader = toast.loading("Updating course...");
       await CourApi.update(values, id);
       
       setData(data.map(cour => 
@@ -84,9 +77,7 @@ export default function AdminCourList() {
     } catch (error) {
       toast.error("Failed to update course");
       console.error(error);
-    } finally {
-      toast.dismiss(updatingLoader);
-    }
+    } 
   };
 
   const filteredData = data.filter(cour => 
@@ -217,47 +208,6 @@ export default function AdminCourList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <Input
-          placeholder="Search courses..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button className="ml-auto">
-              <Plus className="h-4 w-4 mr-2" />
-              Add New Course
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="sm:max-w-md">
-            <SheetHeader>
-              <SheetTitle>Create New Course</SheetTitle>
-              <SheetDescription>
-                Fill in the details for the new course.
-              </SheetDescription>
-            </SheetHeader>
-            <div className="py-4">
-              <CourUpsertForm 
-                handleSubmit={async (values) => {
-                  setIsCreating(true);
-                  try {
-                    const { data: newCourse } = await CourApi.create(values);
-                    setData([...data, newCourse]);
-                    toast.success("Course created successfully");
-                  } catch (error) {
-                    toast.error("Failed to create course");
-                  } finally {
-                    setIsCreating(false);
-                  }
-                }}
-                values={null}
-              />
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
 
       <DataTable 
         columns={AdminCourColumns} 

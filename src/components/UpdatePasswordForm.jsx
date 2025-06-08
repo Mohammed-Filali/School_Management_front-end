@@ -41,11 +41,12 @@ export default function UpdatePasswordForm({ onSubmitHandler }) {
   const onSubmit = async (values) => {
     const loader = toast.loading("Updating password...");
     try {
-      const response = await onSubmitHandler(values); // Call API or handle form data
-      if (response.status === 200) {
+    await onSubmitHandler(values); // Call API or handle form data
+
         toast.success("Password updated successfully!");
         form.reset(); // Reset the form after success
-      }
+      
+     
     } catch (error) {
       const responseErrors = error.response?.data?.errors || {};
       Object.entries(responseErrors).forEach(([fieldName, errorMessages]) => {

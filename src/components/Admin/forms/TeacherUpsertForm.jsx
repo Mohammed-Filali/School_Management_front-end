@@ -31,14 +31,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import moment from "moment";
 
 const formSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters").max(50),
+  firsName: z.string().min(2, "First name must be at least 2 characters").max(50),
   lastName: z.string().min(2, "Last name must be at least 2 characters").max(50),
   date_of_birth: z.string().refine(val => moment(val, 'YYYY-MM-DD', true).isValid(), {
     message: "Please enter a valid date (YYYY-MM-DD)",
   }),
   gender: z.enum(["m", "f"]),
   blood_Type: z.string().min(1, "Please select a blood type"),
-  address: z.string().min(5, "Address must be at least 5 characters").max(255),
+  adress: z.string().min(5, "Address must be at least 5 characters").max(255),
   phone: z.string().regex(/^[0-9]{10}$/, "Phone must be 10 digits"),
   email: z.string().email("Please enter a valid email").min(2).max(30),
   password: z.string().min(8, "Password must be at least 8 characters").max(30),
@@ -69,12 +69,12 @@ export default function TeacherUpsertForm({ handleSubmit, values, onSuccess }) {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: values?.firstName || "",
+      firsName: values?.firsName || "",
       lastName: values?.lastName || "",
       date_of_birth: values?.date_of_birth || "",
       gender: values?.gender || "m",
       blood_Type: values?.blood_Type || "",
-      address: values?.address || "",
+      adress: values?.adress || "",
       phone: values?.phone || "",
       email: values?.email || "",
       password: values?.password || "",
@@ -85,7 +85,6 @@ export default function TeacherUpsertForm({ handleSubmit, values, onSuccess }) {
   const {
     setError,
     formState: { isSubmitting },
-    reset,
     setValue,
     trigger,
   } = form;
@@ -99,28 +98,14 @@ export default function TeacherUpsertForm({ handleSubmit, values, onSuccess }) {
   };
 
   const onSubmit = async (formValues) => {
-    const loaderMsg = isUpdate ? "Updating teacher..." : "Creating teacher...";
-    const loader = toast.loading(loaderMsg);
 
     try {
-      const { status, message } = await handleSubmit(formValues);
-      if (status === 201 || status === 200) {
-        toast.success(message);
-        reset();
-        if (onSuccess) onSuccess();
-      }
-    } catch (error) {
-      if (error.response?.data?.errors) {
-        const errorMessages = error.response.data.errors;
-        Object.entries(errorMessages).forEach(([field, message]) => {
-          setError(field, { message });
-        });
-      } else {
-        toast.error("An unexpected error occurred");
-      }
-    } finally {
-      toast.dismiss(loader);
-    }
+      await handleSubmit(formValues);
+      toast.success("Teacher saved successfully");
+    } 
+    catch (error) {
+     console.log('erro :' +error)
+    } 
   };
 
   return (
@@ -140,7 +125,7 @@ export default function TeacherUpsertForm({ handleSubmit, values, onSuccess }) {
                 
                 <FormField
                   control={form.control}
-                  name="firstName"
+                  name="firsName"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>First Name</FormLabel>
@@ -255,7 +240,7 @@ export default function TeacherUpsertForm({ handleSubmit, values, onSuccess }) {
                 
                 <FormField
                   control={form.control}
-                  name="address"
+                  name="adress"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Address</FormLabel>

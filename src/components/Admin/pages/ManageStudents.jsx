@@ -15,13 +15,15 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { AdminApi } from "../../../service/api/student/admins/adminApi.js";
+import { addStudents_count } from "../../../redux/admin/adminCountsList.js";
+import { useDispatch } from "react-redux";
 
 export default function ManageStudents() {
   const { user } = UseUserContext();
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
   const [loading, setLoading] = useState(true);
-
+const dispatch = useDispatch();
   useEffect(() => {
     const fetchClasses = async () => {
       try {
@@ -129,7 +131,13 @@ export default function ManageStudents() {
               <h2 className="text-xl font-semibold mb-6">Add New Student</h2>
               <div className="rounded-lg border p-4 md:p-6">
                 <StudentUpsertForm 
-                  handleSubmit={(values) => AdminApi.createStudent(values)} 
+                  handleSubmit={async(values) =>{ try{
+                    await AdminApi.createStudent(values)
+                    dispatch(addStudents_count())
+                  }catch (error){
+                    console.error("Failed to create student:", error);
+                  }
+                }} 
                   classes={classes}
                 />
               </div>

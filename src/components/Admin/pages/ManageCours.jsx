@@ -5,6 +5,7 @@ import { CourApi } from "../../../service/api/student/admins/CourApi";
 import AdminCourList from "../data-table/cours/AdminCourliste";
 import { Card } from "@/components/ui/card";
 import { PlusCircle, List } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ManageCours() {
   return (
@@ -58,8 +59,18 @@ export default function ManageCours() {
             <Separator className="my-4" />
             
             <Card className="p-6">
-              <CourUpsertForm 
-                handleSubmit={(values) => CourApi.create(values)} 
+             <CourUpsertForm 
+                handleSubmit={async (values) => {
+                  try {
+                    await CourApi.create(values);
+                              toast.success("Course created successfully");
+
+                  } catch (error) {
+                    toast.error("Failed to create course");
+                    throw error;
+                  } 
+                }}
+                values={null}
               />
             </Card>
           </TabsContent>

@@ -5,13 +5,20 @@ import AdminTeacherList from "../data-table/teachers/AdminTeacherList";
 import TeacherUpsertForm from "../forms/TeacherUpsertForm";
 import { TeacherApi } from "../../../service/api/student/teacherApi";
 import { Card } from "@/components/ui/card";
+import { useDispatch } from "react-redux";
+import { addTeachers_count } from "../../../redux/admin/adminCountsList";
+import { toast } from "sonner";
 
 export default function ManageTeachers() {
+  const dispatch = useDispatch();
   const handleCreateTeacher = async (values) => {
     try {
-      const response = await TeacherApi.create(values);
-      return response;
+       await TeacherApi.create(values);
+      dispatch (addTeachers_count())
+      toast.success('Teacher added seccessfuly')
+      
     } catch (error) {
+      toast.error('try again')
       throw error;
     }
   };

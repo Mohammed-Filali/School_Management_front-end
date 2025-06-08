@@ -21,6 +21,7 @@ import { setTasks, setGraphData, setLast10Task } from '../../redux/TasksSlice';
 import { useEffect, useState } from "react";
 import { TasksApi } from "../../service/api/student/tasksApi";
 import { UseUserContext } from "../../context/StudentContext";
+import { setExams } from "../../redux/Teacher/ExamsSlice";
 
 const TaskTable = ({ tasks }) => {
   const ICONS = {
@@ -30,8 +31,8 @@ const TaskTable = ({ tasks }) => {
   };
 
   const TableHeader = () => (
-    <thead className='border-b border-gray-200'>
-      <tr className='text-black text-left'>
+    <thead className='border-b border-gray-200 dark:bg-gray-900 dark:text-white'>
+      <tr className='text-black text-left dark:text-white'>
         <th className='py-3 px-2'>Task Title</th>
         <th className='py-3 px-2'>Priority</th>
         <th className='py-3 px-2 hidden md:table-cell'>Status</th>
@@ -41,11 +42,11 @@ const TaskTable = ({ tasks }) => {
   );
 
   const TableRow = ({ task }) => (
-    <tr className='border-b border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors'>
+    <tr className='border-b border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors dark:bg-gray-900 dark:text-white'>
       <td className='py-3 px-2'>
         <div className='flex items-center gap-2'>
           <div className={clsx("w-3 h-3 rounded-full", TASK_TYPE[task.status])} />
-          <p className='text-base text-black font-medium'>{task.title}</p>
+          <p className='text-base text-black font-medium dark:text-white'>{task.title}</p>
         </div>
       </td>
 
@@ -69,7 +70,7 @@ const TaskTable = ({ tasks }) => {
       </td>
 
       <td className='py-3 px-2 hidden md:table-cell'>
-        <span className='text-sm text-gray-600'>
+        <span className='text-sm text-gray-600 dark:text-white'>
           {moment(task.created_at).format("MMM D, YYYY")}
         </span>
       </td>
@@ -77,9 +78,9 @@ const TaskTable = ({ tasks }) => {
   );
 
   return (
-    <div className='w-full bg-white rounded-lg border border-gray-200 overflow-hidden'>
+    <div className='w-full bg-white rounded-lg border border-gray-200 overflow-hidden dark:bg-gray-900 dark:text-white'>
       <div className='p-4 border-b border-gray-200'>
-        <h3 className='text-lg font-semibold text-gray-800'>Recent Tasks</h3>
+        <h3 className='text-lg font-semibold text-gray-800 dark:text-white'>Recent Tasks</h3>
       </div>
       <div className="overflow-x-auto">
         <table className='w-full'>
@@ -97,8 +98,9 @@ const TaskTable = ({ tasks }) => {
 
 const ExamSummary = ({ exams }) => {
   // Calculate average grades per exam
+  const [allRecords,setAllRecords]= useState()
   const examStats = exams.map(exam => {
-    const total = exam.records.reduce((sum, record) => sum + record.note, 0);
+    const total = exam.records.reduce((sum, record) => sum + record.note, 0);    
     const average = exam.records.length > 0 ? (total / exam.records.length).toFixed(2) : 0;
     return {
       name: exam.name,
@@ -110,9 +112,9 @@ const ExamSummary = ({ exams }) => {
   });
 
   return (
-    <div className='w-full bg-white rounded-lg border border-gray-200 overflow-hidden'>
+    <div className='w-full bg-white rounded-lg border border-gray-200 overflow-hidden dark:bg-gray-900 dark:text-white'>
       <div className='p-4 border-b border-gray-200'>
-        <h3 className='text-lg font-semibold text-gray-800'>Exam Performance</h3>
+        <h3 className='text-lg font-semibold text-gray-800 dark:text-white'>Exam Performance</h3>
       </div>
       <div className="p-4">
         {examStats.length > 0 ? (
@@ -120,8 +122,8 @@ const ExamSummary = ({ exams }) => {
             {examStats.map((exam, index) => (
               <div key={index} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                 <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-medium text-gray-800">{exam.name}</h4>
-                  <span className="text-sm text-gray-500">{exam.count} students</span>
+                  <h4 className="font-medium text-gray-800 dark:text-white">{exam.name}</h4>
+                  <span className="text-sm text-gray-500 dark:text-white">{exam.count} records</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex-1 mr-4">
@@ -134,10 +136,10 @@ const ExamSummary = ({ exams }) => {
                   </div>
                   <div className="text-right">
                     <span className="font-semibold">{exam.average}</span>
-                    <span className="text-xs text-gray-500 ml-1">/20</span>
+                    <span className="text-xs text-gray-500 ml-1 dark:text-white">/20</span>
                   </div>
                 </div>
-                <div className="flex justify-between mt-2 text-xs text-gray-500">
+                <div className="flex justify-between mt-2 text-xs text-gray-500 dark:text-white">
                   <span>Lowest: {exam.lowest}</span>
                   <span>Highest: {exam.highest}</span>
                 </div>
@@ -154,20 +156,24 @@ const ExamSummary = ({ exams }) => {
 
 const ClassSummary = ({ classes }) => {
   const totalHours = classes.reduce((sum, cls) => sum + cls.masseH, 0);
-  const totalClasses = classes.reduce((sum, cls) => sum + cls.class_type.classe.length, 0);
-
+  const totalClasses = classes.reduce((sum, cls) => {
+    if (cls.class_type && Array.isArray(cls.class_type.classe)) {
+      return sum + cls.class_type.classe.length;
+    }
+    return sum;
+  }, 0);
   return (
-    <div className='w-full bg-white rounded-lg border border-gray-200 overflow-hidden'>
+    <div className='w-full bg-white rounded-lg border border-gray-200 overflow-hidden dark:bg-gray-900 dark:text-white'>
       <div className='p-4 border-b border-gray-200'>
-        <h3 className='text-lg font-semibold text-gray-800'>Classes Summary</h3>
+        <h3 className='text-lg font-semibold text-gray-800 dark:text-white'>Classes Summary</h3>
       </div>
       <div className="p-4">
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-blue-50 p-3 rounded-lg">
+          <div className="bg-blue-50 p-3 rounded-lg dark:bg-gray-500 dark:text-white">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Classes</p>
-                <h3 className="text-2xl font-bold text-gray-800">{totalClasses}</h3>
+                <p className="text-sm text-gray-600 dark:text-white">Total Classes</p>
+                <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{totalClasses}</h3>
               </div>
               <div className="p-3 rounded-full bg-blue-100 text-blue-600">
                 <MdClass size={20} />
@@ -175,31 +181,31 @@ const ClassSummary = ({ classes }) => {
             </div>
           </div>
           
-          <div className="bg-green-50 p-3 rounded-lg">
+          <div className="bg-green-50 p-3 rounded-lg dark:bg-gray-500 dark:text-white">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Hours</p>
-                <h3 className="text-2xl font-bold text-gray-800">{totalHours}</h3>
+                <p className="text-sm text-gray-600 dark:text-white">Total Hours</p>
+                <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{totalHours}</h3>
               </div>
               <div className="p-3 rounded-full bg-green-100 text-green-600">
-                <CalendarCheck size={20} />
+                <CalendarCheck  size={20} />
               </div>
             </div>
           </div>
         </div>
         
         <div className="mt-4">
-          <h4 className="font-medium text-gray-700 mb-2">Your Classes</h4>
+          <h4 className="font-medium text-gray-700 mb-2 dark:text-white">Your Classes</h4>
           <ul className="space-y-2">
             {classes.map((cls, index) => (
               <li key={index} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
                 <div>
-                  <p className="font-medium">{cls.class_type.name}</p>
-                  <p className="text-sm text-gray-500">
-                    {cls.class_type.classe.length} groups • {cls.masseH} hours
+                  <p className="font-medium">{cls.class_type?.name}</p>
+                  <p className="text-sm text-gray-500 dark:text-white">
+                    {cls.class_type?.classe?.length} groups • {cls.masseH} hours
                   </p>
                 </div>
-                <span className="text-sm text-gray-500">{cls.class_type.code}</span>
+                <span className="text-sm text-gray-500 dark:text-white">{cls.class_type?.code}</span>
               </li>
             ))}
           </ul>
@@ -214,16 +220,19 @@ const TeacherDashboard = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [filteredTasks, setFilteredTasks] = useState([]);
-  
-  // Fetch all tasks from API
+  const exams = useSelector((state) => state.TeacherExams.exams);
+  const totalExams = useSelector((state) => state.TeacherExams.totalExams); // Get exams from Redux
+
   useEffect(() => {
     dispatch(setGraphData([]));
     dispatch(setLast10Task([]));
-
     TasksApi.tasks().then(({ data }) => {
       dispatch(setTasks(data));
       setLoading(false);
     }).catch(() => setLoading(false));
+    if(exams.length === 0) {
+    dispatch(setExams(user.exams));
+    }
   }, [dispatch]);
 
   const allTasks = useSelector((state) => state.userTasks.tasks);
@@ -239,6 +248,7 @@ const TeacherDashboard = () => {
   }, [allTasks, user]);
 
   const graphData = useSelector((state) => state.userTasks.graphData);
+  
   const last10Task = useSelector((state) => state.userTasks.last10Task);
 
   // Update graph data and last 10 tasks
@@ -258,13 +268,25 @@ const TeacherDashboard = () => {
   }, [filteredTasks, dispatch]);
 
   // Calculate statistics
-  const totalClasses = user.classes.reduce((sum, cls) => sum + cls.class_type.classe.length, 0);
-  const totalHours = user.classes.reduce((sum, cls) => sum + cls.masseH, 0)*totalClasses;
-  const totalExams = user.exams.length;
+  const totalClasses = user.classes.reduce((sum, cls) => {
+    if (cls.class_type && Array.isArray(cls.class_type.classe)) {
+      return sum + cls.class_type.classe.length;
+    }
+    return sum;
+  }, 0);
+  
+  const totalHours = user.classes.reduce((sum, cls) => sum + cls.masseH, 0) * totalClasses;
   const totalStudents = user.classes.reduce((sum, cls) => {
-    const uniqueStudents = new Set(cls.class_type.classe.flatMap(record => record.students.map(student => student.id)));
+    if (!cls.class_type || !Array.isArray(cls.class_type.classe)) return sum;
+  
+    const uniqueStudents = new Set(
+      cls.class_type.classe.flatMap(record =>
+        (record.students || []).map(student => student.id)
+      )
+    );
     return sum + uniqueStudents.size;
   }, 0);
+  
 
   const stats = [
     {
@@ -304,7 +326,7 @@ const TeacherDashboard = () => {
   const Card = ({ label, count, bg, text, icon }) => (
     <div className={`p-4 rounded-xl ${bg} flex items-center justify-between shadow-sm`}>
       <div>
-        <p className="text-sm font-medium text-gray-600">{label}</p>
+        <p className="text-sm font-medium text-gray-600 ">{label}</p>
         <h3 className="text-2xl font-bold mt-1 text-gray-800">{count}</h3>
       </div>
       <div className={`p-3 rounded-lg ${text} bg-white bg-opacity-50`}>
@@ -324,13 +346,13 @@ const TeacherDashboard = () => {
   return (
     <div className="space-y-6 pb-6">
       {/* Welcome Header */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
+      <div className="bg-white rounded-xl shadow-sm p-6 dark:bg-gray-900 dark:text-white">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Welcome, {user.firsName} {user.lastName}</h1>
-            <p className="text-gray-600 mt-1">Here's what's happening with your classes today</p>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Welcome, {user.firsName} {user.lastName}</h1>
+            <p className="text-gray-600 mt-1 dark:text-white">Here's what's happening with your classes today</p>
           </div>
-          <div className="mt-4 md:mt-0 flex items-center space-x-2 bg-blue-50 px-4 py-2 rounded-lg">
+          <div className="mt-4 md:mt-0 flex items-center space-x-2 bg-blue-50 px-4 py-2 rounded-lg dark:bg-lime-100 ">
             <BookOpen className="text-blue-500" size={18} />
             <span className="font-medium text-blue-600">{user.course.name}</span>
           </div>
@@ -345,27 +367,27 @@ const TeacherDashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 " >
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
           {/* Task Priority Chart */}
-          <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Task Priority Distribution</h3>
-              <MdBarChart className="text-gray-500" size={20} />
+          <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm dark:bg-gray-900 dark:text-white">
+            <div className="flex items-center justify-between mb-4 dark:bg-gray-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Task Priority Distribution</h3>
+              <MdBarChart className="text-gray-500 dark:text-white" size={20} />
             </div>
             <Chart data={graphData} />
           </div>
           
           {/* Recent Tasks */}
-          <TaskTable tasks={last10Task} />
+          <TaskTable  tasks={last10Task} />
         </div>
 
         {/* Right Column */}
-        <div className="space-y-6">
+        <div className="space-y-6 dark:bg-gray-900 dark:text-white">
           {/* Exam Summary */}
           <ExamSummary exams={user.exams} />
-          
+
           {/* Class Summary */}
           <ClassSummary classes={user.classes} />
         </div>

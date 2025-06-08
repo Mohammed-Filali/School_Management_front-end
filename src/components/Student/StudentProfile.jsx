@@ -27,19 +27,13 @@ export default function StudentDashboard() {
         <Card>
           <CardHeader className="pb-4">
             <div className="flex flex-col items-center space-y-4">
-              <Avatar.Root className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
-                <Avatar.Image
-                  className="w-full h-full object-cover"
-                  src={
-                    user.profileImage ||
-                    "https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1180&q=80"
-                  }
-                  alt={`${user.firsName} ${user.lastName}`}
-                />
-                <Avatar.Fallback className="w-full h-full flex items-center justify-center bg-indigo-100 text-indigo-800 text-4xl font-bold">
-                  {user.firsName?.charAt(0).toUpperCase()}
-                </Avatar.Fallback>
-              </Avatar.Root>
+                 <Avatar.Root className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                            
+                             <Avatar.Fallback className="w-full h-full flex items-center justify-center bg-indigo-100 text-indigo-800 text-4xl font-bold">
+                               {user.name?.charAt(0).toUpperCase()}
+                             </Avatar.Fallback>
+                           </Avatar.Root>
+             
 
               <div className="text-center space-y-1">
                 <h2 className="text-2xl font-bold tracking-tight">

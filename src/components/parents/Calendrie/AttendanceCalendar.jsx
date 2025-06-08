@@ -5,6 +5,7 @@ import { UseUserContext } from '../../../context/StudentContext';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu';
 import { ChevronDown, User, Calendar, Frown, Smile, Clock } from 'lucide-react';
 
+// Add dark mode support using Tailwind's dark: classes
 const ParentAbsentStudentsPage = () => {
   const [selectedDate, setSelectedDate] = useState(moment());
   const [loading, setLoading] = useState(false);
@@ -92,7 +93,7 @@ const ParentAbsentStudentsPage = () => {
 
   if (error) {
     return (
-      <div className="p-4">
+      <div className="p-4 dark:bg-gray-900 min-h-screen">
         <Alert
           message="Error"
           description={error}
@@ -113,34 +114,34 @@ const ParentAbsentStudentsPage = () => {
   }
 
   return (
-    <div className="p-4">
+    <div className="p-4 dark:bg-gray-900 min-h-screen">
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
           Select Student
         </label>
         <DropdownMenu>
-          <DropdownMenuTrigger className="w-full flex items-center justify-between gap-2 p-3 rounded-lg border border-gray-300 bg-white text-gray-900 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
+          <DropdownMenuTrigger className="w-full flex items-center justify-between gap-2 p-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors">
             <div className="flex items-center gap-2">
-              <User className="h-5 w-5 text-gray-500" />
+              <User className="h-5 w-5 text-gray-500 dark:text-gray-300" />
               <span>{selectedStudent?.name || "Select a Student"}</span>
             </div>
-            <ChevronDown className="h-4 w-4 text-gray-500" />
+            <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-300" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] bg-white rounded-md shadow-lg border border-gray-200 mt-1 overflow-hidden z-50">
+          <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 mt-1 overflow-hidden z-50">
             {user?.students?.length > 0 ? (
               user.students.map((student) => (
                 <DropdownMenuItem
                   key={student.id}
                   onSelect={() => setSelectedStudent(student)}
-                  className="cursor-pointer px-4 py-2 text-gray-700 hover:bg-gray-100 focus:bg-gray-100 outline-none transition-colors"
+                  className="cursor-pointer px-4 py-2 text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 outline-none transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="bg-gray-100 p-2 rounded-full">
+                    <div className="bg-gray-100 dark:bg-gray-700 p-2 rounded-full">
                       <User size={16} />
                     </div>
                     <div>
                       <p className="font-medium">{student.name}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         Class {student.classe_id}
                       </p>
                     </div>
@@ -150,7 +151,7 @@ const ParentAbsentStudentsPage = () => {
             ) : (
               <DropdownMenuItem
                 disabled
-                className="px-4 py-2 text-gray-500 text-sm"
+                className="px-4 py-2 text-gray-500 dark:text-gray-400 text-sm"
               >
                 No Students Available
               </DropdownMenuItem>
@@ -163,7 +164,7 @@ const ParentAbsentStudentsPage = () => {
         <>
           <div className="mb-6 flex flex-wrap gap-4 items-center">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                 Select Date
               </label>
               <DatePicker
@@ -172,21 +173,22 @@ const ParentAbsentStudentsPage = () => {
                 format="MMMM D, YYYY"
                 allowClear={false}
                 disabledDate={(current) => current && current > moment().endOf('day')}
-                className="w-full"
+                className="w-full dark:[&>input]:bg-gray-800 dark:[&>input]:text-gray-100"
+                popupClassName="dark:bg-gray-800 dark:text-gray-100"
               />
             </div>
             
             <div className="flex-1 min-w-[200px]">
-              <div className="bg-white p-4 rounded-lg border border-gray-200">
-                <h4 className="text-sm font-medium text-gray-500 mb-1">Attendance Summary</h4>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h4 className="text-sm font-medium text-gray-500 dark:text-gray-300 mb-1">Attendance Summary</h4>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Present Days:</span>
+                  <span className="text-gray-600 dark:text-gray-200">Present Days:</span>
                   <span className="font-medium">
                     {selectedStudent.attendance?.filter(a => a.status === 'present').length || 0}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Absent Days:</span>
+                  <span className="text-gray-600 dark:text-gray-200">Absent Days:</span>
                   <span className="font-medium">
                     {selectedStudent.attendance?.filter(a => a.status === 'absent').length || 0}
                   </span>
@@ -204,7 +206,7 @@ const ParentAbsentStudentsPage = () => {
                 </span>
               </div>
             }
-            className="overflow-x-auto"
+            className="overflow-x-auto dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700"
             extra={
               <Button 
                 type="primary" 
@@ -222,9 +224,10 @@ const ParentAbsentStudentsPage = () => {
                 rowKey={(record) => record.id}
                 pagination={false}
                 scroll={{ x: true }}
+                className="dark:bg-gray-800 dark:text-gray-100"
                 locale={{
                   emptyText: (
-                    <div className="py-8 text-center text-gray-500">
+                    <div className="py-8 text-center text-gray-500 dark:text-gray-400">
                       <Calendar className="mx-auto h-8 w-8 mb-2" />
                       <p>No attendance records found for this date</p>
                     </div>
@@ -234,36 +237,12 @@ const ParentAbsentStudentsPage = () => {
             </Spin>
           </Card>
 
-          {/* Student Performance Summary */}
-          {selectedStudent.records?.length > 0 && (
-            <Card
-              title="Recent Exam Results"
-              className="mt-6"
-            >
-              <div className="space-y-4">
-                {selectedStudent.records.slice(0, 3).map((record) => (
-                  <div key={record.id} className="flex items-center justify-between p-3 border-b border-gray-100 last:border-0">
-                    <div>
-                      <h4 className="font-medium">{record.exams.name}</h4>
-                      <p className="text-sm text-gray-500">
-                        {record.exams.course.name} • {moment(record.created_at).format('MMM D')}
-                      </p>
-                    </div>
-                    <div className={`text-lg font-bold ${
-                      record.note >= 10 ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {record.note}/20
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          )}
+          
         </>
       ) : (
-        <div className="text-center mt-4 p-4 bg-gray-50 rounded-lg">
-          <p className="text-gray-600">No students found in your account.</p>
-          <p className="text-sm text-gray-500 mt-2">Please contact the school if this is incorrect.</p>
+        <div className="text-center mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <p className="text-gray-600 dark:text-gray-200">No students found in your account.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Please contact the school if this is incorrect.</p>
         </div>
       )}
     </div>

@@ -5,28 +5,26 @@ import {
   Award, 
   CheckCircle, 
   AlertCircle,
-  Loader2,
   FileText,
   ClipboardList,
   BarChart2
 } from "lucide-react";
 import moment from "moment";
-import { useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import { TasksApi } from "../../service/api/student/tasksApi";
 import { UseUserContext } from "../../context/StudentContext";
 import { Progress } from "antd";
 import { Link } from "react-router-dom";
-import { STUDENT_MANAGE_EXAMS_ROUTE, STUDENT_MANAGE_MOYENNES_ROUTE, STUDENT_MANAGE_RECORDS_ROUTE, STUDENT_MANAGE_TASKS_ROUTE } from "../../router";
+import {  STUDENT_MANAGE_MOYENNES_ROUTE, STUDENT_MANAGE_RECORDS_ROUTE, STUDENT_MANAGE_TASKS_ROUTE } from "../../router";
 
 const DashboardCard = ({ title, value, icon, trend, trendColor, className }) => (
-  <div className={`bg-white rounded-lg border p-6 flex flex-col ${className}`}>
+  <div className={`bg-white dark:bg-gray-900 rounded-lg border dark:border-gray-700 p-6 flex flex-col ${className}`}>
     <div className="flex justify-between items-start mb-4">
       <div>
-        <p className="text-sm font-medium text-gray-500">{title}</p>
-        <h3 className="text-2xl font-bold mt-1">{value}</h3>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        <h3 className="text-2xl font-bold mt-1 text-gray-900 dark:text-white">{value}</h3>
       </div>
-      <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
+      <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
         {icon}
       </div>
     </div>
@@ -41,16 +39,30 @@ const DashboardCard = ({ title, value, icon, trend, trendColor, className }) => 
 );
 
 const CourseProgress = ({ course }) => {
-  const progress = Math.min(Math.round((course.total / 20) * 100), 100); 
-  // Assuming max score is 20
+  const total = parseFloat(course?.total ?? "0");
+  const progress = Math.min(Math.round((total / 20) * 100), 100);
+  console.log("Course Progress:", course, progress);
+  
   return (
-    <div className="bg-white rounded-lg border p-4">
+    <div className="bg-white dark:bg-gray-900 rounded-lg border dark:border-gray-700 p-4">
       <div className="flex justify-between items-center mb-2">
-        <h4 className="font-medium">{course.course.name}</h4>
-        <span className="text-sm font-semibold">{course.total}/20</span>
+        <h4 className="font-medium text-gray-900 dark:text-white">{course.course.name}</h4>
+        <span className="text-sm font-semibold text-gray-900 dark:text-white">{total}/20</span>
       </div>
-      <Progress value={progress} className="h-2" />
-      <div className="flex justify-between text-xs text-gray-500 mt-1">
+      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+        <div
+          className={`h-2.5 rounded-full transition-all duration-500 ease-in-out ${
+            progress >= 75
+              ? "bg-green-500"
+              : progress >= 50
+              ? "bg-yellow-400"
+              : "bg-red-500"
+          }`}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <div className="text-right text-xs text-gray-500 dark:text-gray-400 mt-1">{progress}%</div>
+      <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
         <span>0</span>
         <span>20</span>
       </div>
@@ -63,17 +75,17 @@ const RecentExam = ({ exam }) => {
   const isPassing = score >= 10; // Assuming passing is 10/20
   
   return (
-    <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+    <div className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
       <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg ${isPassing ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+        <div className={`p-2 rounded-lg ${isPassing ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400' : 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400'}`}>
           {isPassing ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
         </div>
         <div>
-          <h4 className="font-medium">{exam.exams.name}</h4>
-          <p className="text-sm text-gray-500">{exam.exams.type.toUpperCase()} • {moment(exam.created_at).format('MMM D')}</p>
+          <h4 className="font-medium text-gray-900 dark:text-white">{exam.exams.name}</h4>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{exam.exams.type.toUpperCase()} • {moment(exam.created_at).format('MMM D')}</p>
         </div>
       </div>
-      <span className={`font-bold ${isPassing ? 'text-green-600' : 'text-red-600'}`}>
+      <span className={`font-bold ${isPassing ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
         {exam.note}
       </span>
     </div>
@@ -82,25 +94,25 @@ const RecentExam = ({ exam }) => {
 
 const TaskItem = ({ task }) => {
   const priorityColors = {
-    high: 'text-red-600 bg-red-100',
-    medium: 'text-yellow-600 bg-yellow-100',
-    low: 'text-green-600 bg-green-100'
+    high: 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900',
+    medium: 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900',
+    low: 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900'
   };
 
   return (
-    <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+    <div className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
       <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg ${priorityColors[task.priority] || 'bg-gray-100 text-gray-600'}`}>
+        <div className={`p-2 rounded-lg ${priorityColors[task.priority] || 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}>
           <ClipboardList size={18} />
         </div>
         <div>
-          <h4 className="font-medium">{task.title}</h4>
-          <p className="text-sm text-gray-500">
+          <h4 className="font-medium text-gray-900 dark:text-white">{task.title}</h4>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Due: {moment(task.due_date).format('MMM D, YYYY')}
           </p>
         </div>
       </div>
-      <span className={`text-xs px-2 py-1 rounded-full ${task.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
+      <span className={`text-xs px-2 py-1 rounded-full ${task.status === 'completed' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-400' : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-400'}`}>
         {task.status}
       </span>
     </div>
@@ -109,43 +121,19 @@ const TaskItem = ({ task }) => {
 
 const Dashboard = () => {
   const { user } = UseUserContext();
-  const dispatch = useDispatch();
-  const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState([]);
-
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        setLoading(true);
-        const { data } = await TasksApi.tasks();
-        dispatch(setTasks(data));
-        
-        // Filter tasks for the current student
-        const studentTasks = data.filter(
-          task => task.taskable_type === 'student' && task.taskable_id === user.id
-        );
-        setTasks(studentTasks);
-      } catch (error) {
-        console.error("Error fetching tasks:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
-  }, [dispatch, user]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-      </div>
-    );
-  }
+    TasksApi.tasks().then(({ data }) => {
+      const filteredTasks = data.filter(
+        (t) => t.taskable_type === user.role && t.taskable_id === user.id
+      );
+      setTasks(filteredTasks); // ✅ Ici la correction
+    });
+  }, [user]);
 
   // Calculate attendance stats
   const totalAttendance = user.attendance?.length || 0;
-  const presentCount = user.attendance?.filter(a => a.status === 'present')?.length || 0;
+  const presentCount = user.attendance?.filter(a => a.status === 'absent')?.length || 0;
   const attendanceRate = totalAttendance > 0 ? Math.round((presentCount / totalAttendance) * 100) : 0;
 
   // Get latest exams (sorted by date)
@@ -155,7 +143,6 @@ const Dashboard = () => {
 
   // Get upcoming tasks (not completed, sorted by due date)
   const upcomingTasks = [...tasks]
-    .filter(task => task.status !== 'completed')
     .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
     .slice(0, 3);
 
@@ -163,8 +150,8 @@ const Dashboard = () => {
     <div className="container mx-auto px-4 py-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">Student Dashboard</h1>
-        <p className="text-gray-600">Welcome back, {user.name}</p>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Student Dashboard</h1>
+        <p className="text-gray-600 dark:text-gray-400">Welcome back, {user.name}</p>
       </div>
 
       {/* Stats Grid */}
@@ -180,20 +167,20 @@ const Dashboard = () => {
           value={`${attendanceRate}%`} 
           icon={<Calendar size={20} />}
           trend={`${presentCount} of ${totalAttendance} classes`}
-          trendColor={attendanceRate >= 80 ? 'text-green-600' : 'text-yellow-600'}
+          trendColor={attendanceRate >= 80 ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}
         />
         <DashboardCard 
           title="Active Courses" 
-          value={user.moyennes?.length || "0"} 
+          value={user?.classe?.class_type_courses?.length || "0"} 
           icon={<BookOpen size={20} />}
           trend="Currently enrolled"
         />
         <DashboardCard 
           title="Pending Tasks" 
-          value={tasks.filter(t => t.status !== 'completed').length} 
+          value={tasks.length} 
           icon={<ClipboardList size={20} />}
-          trend="To complete"
-          trendColor="text-blue-600"
+          trend="Total tasks from API"
+          trendColor="text-blue-600 dark:text-blue-400"
         />
       </div>
 
@@ -202,13 +189,13 @@ const Dashboard = () => {
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
           {/* Course Progress */}
-          <div className="bg-white rounded-lg border p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
+              <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
                 <BarChart2 size={20} />
                 Course Progress
               </h2>
-              <Link to={STUDENT_MANAGE_MOYENNES_ROUTE} className="text-sm text-blue-600 hover:underline">View All</Link>
+              <Link to={STUDENT_MANAGE_MOYENNES_ROUTE} className="text-sm text-blue-600 dark:text-blue-400 hover:underline">View All</Link>
             </div>
             <div className="space-y-4">
               {user.moyennes?.length > 0 ? (
@@ -216,7 +203,7 @@ const Dashboard = () => {
                   <CourseProgress key={index} course={course} />
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <FileText className="mx-auto h-8 w-8 mb-2" />
                   <p>No course data available</p>
                 </div>
@@ -225,13 +212,13 @@ const Dashboard = () => {
           </div>
 
           {/* Recent Exams */}
-          <div className="bg-white rounded-lg border p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
+              <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
                 <Award size={20} />
                 Recent Exams
               </h2>
-              <Link to={STUDENT_MANAGE_RECORDS_ROUTE} className="text-sm text-blue-600 hover:underline">View All</Link>
+              <Link to={STUDENT_MANAGE_RECORDS_ROUTE} className="text-sm text-blue-600 dark:text-blue-400 hover:underline">View All</Link>
             </div>
             <div className="space-y-2">
               {latestExams.length > 0 ? (
@@ -239,7 +226,7 @@ const Dashboard = () => {
                   <RecentExam key={index} exam={exam} />
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <FileText className="mx-auto h-8 w-8 mb-2" />
                   <p>No exam results available</p>
                 </div>
@@ -251,13 +238,13 @@ const Dashboard = () => {
         {/* Right Column */}
         <div className="space-y-6">
           {/* Upcoming Tasks */}
-          <div className="bg-white rounded-lg border p-6">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
+              <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-white">
                 <Clock size={20} />
                 Upcoming Tasks
               </h2>
-              <Link to={STUDENT_MANAGE_TASKS_ROUTE} className="text-sm text-blue-600 hover:underline">View All</Link>
+              <Link to={STUDENT_MANAGE_TASKS_ROUTE} className="text-sm text-blue-600 dark:text-blue-400 hover:underline">View All</Link>
             </div>
             <div className="space-y-2">
               {upcomingTasks.length > 0 ? (
@@ -265,7 +252,7 @@ const Dashboard = () => {
                   <TaskItem key={index} task={task} />
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <FileText className="mx-auto h-8 w-8 mb-2" />
                   <p>No upcoming tasks</p>
                 </div>
@@ -274,27 +261,36 @@ const Dashboard = () => {
           </div>
 
           {/* Attendance Summary */}
-          <div className="bg-white rounded-lg border p-6">
-            <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg border dark:border-gray-700 p-6">
+            <h2 className="text-lg font-semibold flex items-center gap-2 mb-4 text-gray-900 dark:text-white">
               <Calendar size={20} />
               Attendance Summary
             </h2>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Present</span>
-                <span className="font-medium">{presentCount}</span>
+                <span className="text-gray-600 dark:text-gray-400">Absent</span>
+                <span className="font-medium text-gray-900 dark:text-white">{presentCount}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Absent</span>
-                <span className="font-medium">{totalAttendance - presentCount}</span>
+                <span className="text-gray-600 dark:text-gray-400">Present</span>
+                <span className="font-medium text-gray-900 dark:text-white">{totalAttendance - presentCount}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Total Classes</span>
-                <span className="font-medium">{totalAttendance}</span>
+                <span className="text-gray-600 dark:text-gray-400">Total Classes</span>
+                <span className="font-medium text-gray-900 dark:text-white">{totalAttendance}</span>
               </div>
               <div className="mt-4">
-                <Progress value={attendanceRate} className="h-2" />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div
+                  className={`h-2.5 rounded-full transition-all duration-500 ease-in-out ${
+                    attendanceRate >= 75
+                      ? "bg-green-500"
+                      : attendanceRate >= 50
+                      ? "bg-yellow-400"
+                      : "bg-red-500"
+                  }`}
+                  style={{ width: `${attendanceRate}%` }}
+                />
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
                   <span>0%</span>
                   <span>100%</span>
                 </div>

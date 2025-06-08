@@ -48,7 +48,7 @@ export function AdminAdministrationSideBare({ className }) {
     {
       path: ADMIN_MANAGE_TYPES_ROUTE,
       icon: Type,
-      label: "Types",
+      label: "Filiére",
       active: location.pathname === ADMIN_MANAGE_TYPES_ROUTE
     },
     {
